@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>実力判定テスト・完全版</title>
+
+    <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #eef2f7; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 95%; max-width: 1100px; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* 名前入力画面 */
+        #name-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #eef2f7; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .name-box { background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        .name-input { width: 80%; padding: 15px; font-size: 20px; border: 2px solid #dfe4ea; border-radius: 10px; margin-bottom: 20px; outline: none; }
+        
+        /* 問題表示エリア */
+        .question-container { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 10px solid #2ed573; position: relative; min-height: 120px; }
+        #timer-display { position: absolute; top: 20px; right: 30px; font-size: 32px; font-weight: bold; color: #ff4757; background: #fff5f5; padding: 10px 20px; border-radius: 10px; border: 2px solid #ff4757; }
+        #q-text { font-size: 24px; font-weight: bold; line-height: 1.6; margin: 0; width: 80%; }
+        #q-number { color: #888; font-size: 16px; margin-bottom: 8px; }
+
+        /* 回答・操作パネル */
+        .panel { background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box; }
+        .answer-area { width: 100%; min-height: 120px; padding: 15px; margin-bottom: 15px; border: 2px solid #dfe4ea; border-radius: 12px; background: #fcfcfc; display: flex; align-items: center; flex-wrap: wrap; box-sizing: border-box; }
+        
+        /* 英語並べ替え用チップ */
+        .word-chip { background: #ffffff; border: 2px solid #ced6e0; color: #2f3542; padding: 12px 24px; border-radius: 35px; cursor: pointer; font-size: 20px; font-weight: bold; margin: 8px; transition: 0.2s; }
+        .word-chip.selected { background: #2ed573; color: white; border-color: #26af5f; box-shadow: 0 3px 0 #219150; }
+
+        /* キーパッド（共通） */
+        .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; background: #f1f2f6; padding: 10px; border-radius: 12px; }
+        .btn { padding: 15px 0; font-size: 20px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-num { background: #ffffff; color: #2f3542; font-size: 24px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .symbol { background: #ced6e0; color: #2f3542; }
+        .submit { grid-column: span 10; background: #2ed573; color: white; padding: 20px; font-size: 22px; border-radius: 12px; border:none; margin-top: 10px; box-shadow: 0 4px 0 #26af5f; }
+        .btn-reset { grid-column: span 10; background: #ffa502; color: white; margin-bottom: 5px; box-shadow: 0 4px 0 #e67e22; font-size: 20px; padding: 15px; border-radius: 12px; }
+
+        /* 【数学特殊記号のデザイン】 */
+        .math-var { font-family: 'Times New Roman', serif; font-style: italic; }
+        .frac { display: inline-flex; flex-direction: column; vertical-align: middle; align-items: center; margin: 0 5px; font-size: 0.85em; }
+        .frac .num { border-bottom: 2px solid #333; width: 100%; text-align: center; outline: none; min-width: 30px; min-height: 35px; }
+        .frac .den { width: 100%; text-align: center; outline: none; min-width: 30px; min-height: 35px; }
+        .root-wrap { display: inline-flex; align-items: flex-end; margin: 0 2px; }
+        .root-symbol { font-size: 1.2em; }
+        .root-content { border-top: 2px solid #333; min-width: 25px; min-height: 35px; padding: 0 3px; outline: none; }
+        sup { font-size: 0.6em; vertical-align: super; }
+        .active-in { background: #fffde7; outline: 2px solid #fbc02d !important; border-radius: 4px; }
+        .frac-icon { display: flex; flex-direction: column; align-items: center; }
+        .box { width: 12px; height: 12px; border: 1.5px solid #333; background: #fff; margin: 1px; border-radius: 1px; }
+        .line { width: 18px; height: 2px; background: #333; }
+
+        /* 【判定演出・デジタルフォント設定】 */
+        #feedback-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        .digital-num { 
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace; 
+            font-size: 100px; 
+            font-weight: bold; 
+            color: #2f3542; 
+            letter-spacing: -2px; 
+        }
+        #result-screen { display: none; text-align: center; padding: 50px; background: white; border-radius: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="name-screen">
+    <div class="name-box">
+        <h2>実力判定テスト</h2>
+        <input type="text" id="user-name" class="name-input" placeholder="氏名を入力" autofocus>
+        <button class="btn submit" style="width:100%;" onclick="startTest()">テストを開始する</button>
+    </div>
+</div>
+
+<div id="feedback-overlay">
+    <div id="feedback-text" style="font-size: 70px; font-weight: bold; margin-bottom: 20px;"></div>
+    <div style="font-size: 24px; color: #888;">全国の正解率は...</div>
+    <div id="avg-rate-display" class="digital-num">--%</div>
+    <button id="next-btn" class="btn submit" style="width: 300px; display:none; margin-top:30px;" onclick="closeFeedback()">次の問題へ進む</button>
+</div>
+
+<div id="test-wrapper" class="container" style="display:none;">
+    <div class="question-container">
+        <div id="q-number"></div>
+        <div id="timer-display">60</div>
+        <p id="q-text"></p>
+    </div>
+    <div class="panel">
+        <div id="math-ans-area" class="answer-area">
+            <span id="ans-prefix" style="font-size: 32px; font-weight: bold; margin-right:10px;"></span>
+            <div id="user-input-area" style="font-size: 36px; display: flex; align-items: center; flex-wrap: wrap; min-width: 50px;"></div>
+        </div>
+        <div id="eng-ans-area" class="answer-area" style="display:none;"></div>
+
+        <div id="math-grid" class="grid">
+            <button class="btn btn-num" onclick="add('7')">7</button><button class="btn btn-num" onclick="add('8')">8</button><button class="btn btn-num" onclick="add('9')">9</button>
+            <button class="btn symbol" onclick="add('+')">＋</button><button class="btn symbol" onclick="add('-')">－</button>
+            <button class="btn symbol math-var" onclick="addVar('x')">x</button><button class="btn symbol math-var" onclick="addVar('y')">y</button>
+            <button class="btn symbol" onclick="addPower()">x²</button><button class="btn symbol math-var" onclick="addVar('π')">π</button><button class="btn symbol" onclick="addRoot()">√</button>
+            <button class="btn btn-num" onclick="add('4')">4</button><button class="btn btn-num" onclick="add('5')">5</button><button class="btn btn-num" onclick="add('6')">6</button>
+            <button class="btn symbol" onclick="add('(')">(</button><button class="btn symbol" onclick="add(')')">)</button>
+            <button class="btn symbol" onclick="add('=')">＝</button><button class="btn symbol" onclick="add(',')">，</button>
+            <button class="btn symbol" onclick="add('.')">.</button><button class="btn symbol" onclick="moveNext()">➜</button><button class="btn symbol" onclick="backspace()">⬅</button>
+            <button class="btn btn-num" onclick="add('1')">1</button><button class="btn btn-num" onclick="add('2')">2</button><button class="btn btn-num" onclick="add('3')">3</button><button class="btn btn-num" onclick="add('0')">0</button>
+            <button class="btn symbol" onclick="addFrac()"><div class="frac-icon"><div class="box"></div><div class="line"></div><div class="box"></div></div></button>
+            <button class="btn symbol" style="grid-column: span 5; background:#ff4757; color:white;" onclick="clearAll()">AC</button>
+            <button class="btn submit" onclick="handleAnswer()">回答を確定する</button>
+        </div>
+
+        <div id="eng-grid" class="grid" style="display:none;">
+            <div id="eng-options" style="grid-column: span 10; display: flex; flex-wrap: wrap; justify-content: center; padding: 10px;"></div>
+            <button id="eng-reset-btn" class="btn btn-reset" onclick="resetEnglish()">やり直し（Reset）</button>
+            <button class="btn submit" onclick="handleAnswer()">回答を確定する</button>
+        </div>
+    </div>
+</div>
+
+<div id="result-screen">
+    <h2 id="final-name"></h2>
+    <div style="font-size: 80px; color: #ff4757; font-weight: bold;"><span id="final-score">0</span>点</div>
+</div>
+
+<script>
+    // 【3：システム設定・データ定義】
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzW0WKp1nI0m0-X5MlNJbqd_2ZbCHSmFXJsA5SsjzImCA7KnPQOg8DTOcoq3LcQ8zpy/exec";
+    let currentIdx = 0, totalScore = 0, userName = "", timeLeft = 60, timerInterval = null, lastActive = null, selectedWords = [];
+
+    const answers = [
+        "-3", "12", "4x-2", "-4", "x=5", "x=7", "5個", "15分", "1700円", "a=4", 
+        "y=3", "36pi", "8pi", "S=pix^2", "V=5pix^2", 
+        "am", "are", "iplaytenniseveryday", "eats", "him", "canyouplaythepiano?", 
+        "must", "can", "doesn't", "didyoueatbreakfast?", "where", "whatisthis?", 
+        "because", "on", "igetupatseven"
+    ];
+
+    const questions = [
+        {q: "-8 - (-5) を計算せよ。", type: "math"}, {q: "(-2)² × 3 を計算せよ。", type: "math"}, {q: "3(2x - 4) - 2(x - 5) を簡潔にせよ。", type: "math"}, {q: "x=3, y=-2 のとき、2x + 5y の値を求めよ。", type: "math"}, {q: "5x - 7 = 2x + 8 を解け。", type: "math", ansPrefix: "x="}, {q: "(x-1)/3 = 2 を解け。", type: "math", ansPrefix: "x="}, {q: "りんご120円、みかん80円 合計10個で1000円。りんごは何個？", type: "math", ansSuffix: "個"}, {q: "1200mの道のりを分速80mで歩くと何分かかる？", type: "math", ansSuffix: "分"}, {q: "2000円の15%引きは何円？", type: "math", ansSuffix: "円"}, {q: "yはxに比例し、x=3のときy=12。比例定数aを求めよ。", type: "math", ansPrefix: "a="}, {q: "yはxに反比例し、x=2のときy=6。x=4のときのyを求めよ。", type: "math", ansPrefix: "y="}, {q: "半径3cmの球の表面積を求めよ。(円周率はπとする)", type: "math"}, {q: "半径2cm、高さ6cmの円錐の体積を求めよ。(円周率はπとする)", type: "math"}, {q: "半径xの円の面積Sを求めよ。", type: "math", ansPrefix: "S="}, {q: "底面の半径x、高さ5の円柱の体積Vを求めよ。", type: "math", ansPrefix: "V="},
+        {q: "私は福岡出身です。 I (  ) from Fukuoka.", type: "select", opts: ["am", "is", "are"]}, {q: "These (  ) my notebooks.", type: "input"}, {q: "[ tennis / play / I / every day ] を並び替え。", type: "sort", words: ["I", "play", "tennis", "every day"]}, {q: "He (  ) lunch at 12:00.", type: "select", opts: ["eat", "eats", "eating"]}, {q: "That is my teacher. I like (  ).", type: "input"}, {q: "[ you / the / can / piano / play / ? ] を並び替え。", type: "sort", words: ["you", "the", "can", "piano", "play", "?"]}, {q: "私たちはここで静かにしなければなりません。 We (  ) be quiet here.", type: "select", opts: ["must", "can", "will"]}, {q: "You (  ) go home now.", type: "input"}, {q: "彼は英語を話しません。 He (  ) speak English.", type: "select", opts: ["don't", "doesn't", "isn't"]}, {q: "[ you / breakfast / eat / did / ? ] を並び替え。", type: "sort", words: ["you", "breakfast", "eat", "did", "?"]}, {q: "あなたはどこに住んでいますか？ (  ) do you live?", type: "input"}, {q: "[ this / is / what / ? ] を並び替え。", type: "sort", words: ["this", "is", "what", "?"]}, {q: "忙しかったので行きませんでした。 I didn't go ... (  ) I was busy.", type: "select", opts: ["because", "so", "but"]}, {q: "本は机の上にあります。 The book is (  ) the desk.", type: "input"}, {q: "[ I / at / up / get / seven ] を並び替え。", type: "sort", words: ["I", "get", "up", "at", "seven"]}
+    ];
+
+    // 【4：テスト制御機能（開始・読込・タイマー）】
+    function startTest() { userName = document.getElementById('user-name').value.trim(); if(!userName) return alert("名前を入力してください"); document.getElementById('name-screen').style.display = "none"; document.getElementById('test-wrapper').style.display = "flex"; loadQuestion(); }
+    function loadQuestion() { 
+        const q = questions[currentIdx]; const isMath = (q.type === "math"); 
+        document.getElementById('q-number').innerText = `問題 ${currentIdx + 1} / 30`; document.getElementById('q-text').innerText = q.q; 
+        document.getElementById('math-ans-area').style.display = isMath ? "flex" : "none";
+        document.getElementById('math-grid').style.display = isMath ? "grid" : "none";
+        document.getElementById('eng-ans-area').style.display = isMath ? "none" : "flex";
+        document.getElementById('eng-grid').style.display = isMath ? "none" : "grid";
+        document.getElementById('ans-prefix').innerText = q.ansPrefix || "";
+        setupEnglish(q); clearAll(); startTimer(); 
+    }
+    function startTimer() { timeLeft = 60; document.getElementById('timer-display').innerText = timeLeft; if(timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { timeLeft--; document.getElementById('timer-display').innerText = timeLeft; if(timeLeft <= 0) { clearInterval(timerInterval); handleAnswer(true); } }, 1000); }
+
+    // 【5：英語専用ロジック（並べ替え・やり直し）】
+    function setupEnglish(q) {
+        const optDiv = document.getElementById('eng-options'); const ansArea = document.getElementById('eng-ans-area'); const resetBtn = document.getElementById('eng-reset-btn');
+        optDiv.innerHTML = ""; ansArea.innerHTML = ""; selectedWords = [];
+        if (q.type === "sort") {
+            resetBtn.style.display = "block";
+            q.words.forEach((word, index) => {
+                const b = document.createElement('button'); b.className = "word-chip"; b.innerText = word; b.id = `word-pool-${index}`;
+                b.onclick = () => moveToAnswer(word, b.id); optDiv.appendChild(b);
+            });
+        } else {
+            resetBtn.style.display = "none";
+            ansArea.innerHTML = '<input type="text" id="eng-text-input" style="width:100%; border:none; font-size:32px; outline:none; background:transparent;" placeholder="解答を入力">';
+            if (q.type === "select") {
+                q.opts.forEach(o => {
+                    const b = document.createElement('button'); b.className = "word-chip"; b.innerText = o;
+                    b.onclick = () => { document.getElementById('eng-text-input').value = o; }; optDiv.appendChild(b);
+                });
+            }
+        }
+    }
+    function moveToAnswer(word, id) {
+        const btn = document.getElementById(id); if (btn.classList.contains('selected')) return;
+        btn.classList.add('selected'); btn.style.opacity = "0.3";
+        selectedWords.push({ word: word, id: id }); renderEnglishAnswer();
+    }
+    function moveBackToPool(index) {
+        const item = selectedWords[index]; document.getElementById(item.id).classList.remove('selected');
+        document.getElementById(item.id).style.opacity = "1";
+        selectedWords.splice(index, 1); renderEnglishAnswer();
+    }
+    function resetEnglish() {
+        selectedWords.forEach(item => { const btn = document.getElementById(item.id); if(btn) { btn.classList.remove('selected'); btn.style.opacity = "1"; } });
+        selectedWords = []; renderEnglishAnswer();
+    }
+    function renderEnglishAnswer() {
+        const area = document.getElementById('eng-ans-area'); area.innerHTML = "";
+        selectedWords.forEach((item, index) => {
+            const b = document.createElement('button'); b.className = "word-chip selected"; b.innerText = item.word;
+            b.onclick = () => moveBackToPool(index); area.appendChild(b);
+        });
+    }
+
+    // 【6：回答判定・デジタル数字演出ロジック】
+    async function handleAnswer(isTimeout = false) {
+        clearInterval(timerInterval);
+        const q = questions[currentIdx];
+        let userAns = "";
+        if (q.type === "sort") userAns = selectedWords.map(item => item.word).join(" ");
+        else if (q.type === "math") userAns = (q.ansPrefix || "") + getFormulaText(document.getElementById('user-input-area')) + (q.ansSuffix || "");
+        else userAns = document.getElementById('eng-text-input').value;
+        if(isTimeout) userAns = "時間切れ";
+
+        const clean = (str) => String(str).replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/[－―ー−‐]/g, "-").replace(/[＝]/g, "=").replace(/[ππ]/g, "pi").replace(/\s/g, "").toLowerCase();
+        const isCorrect = !isTimeout && (clean(userAns) === clean(answers[currentIdx]));
+
+        const overlay = document.getElementById('feedback-overlay');
+        const fText = document.getElementById('feedback-text');
+        const dNum = document.getElementById('avg-rate-display');
+        fText.innerText = isCorrect ? "正解！" : "不正解...";
+        fText.style.color = isCorrect ? "#2ed573" : "#ff4757";
+        overlay.style.display = "flex";
+        document.getElementById('next-btn').style.display = "none";
+
+        // デジタルシャッフル開始
+        let shuffleInterval = setInterval(() => {
+            dNum.innerText = Math.floor(Math.random() * 100) + "%";
+        }, 50);
+
+        try {
+            const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify({ name: userName, qNum: currentIdx + 1, userAns: userAns, timeSpent: 60 - timeLeft, isCorrect: isCorrect }) });
+            const result = await res.json();
+            clearInterval(shuffleInterval);
+            dNum.innerText = result.avgRate + "%";
+            dNum.style.color = "#ff4757";
+            if(isCorrect) totalScore += (currentIdx % 5 === 4 ? 3 : 2);
+            document.getElementById('next-btn').style.display = "block";
+        } catch (e) { 
+            clearInterval(shuffleInterval);
+            dNum.innerText = "--%";
+            document.getElementById('next-btn').style.display = "block";
+        }
+    }
+
+    function closeFeedback() { document.getElementById('feedback-overlay').style.display = "none"; document.getElementById('avg-rate-display').style.color = "#2f3542"; document.getElementById('next-btn').style.display = "none"; currentIdx++; if(currentIdx < 30) loadQuestion(); else showResult(); }
+    function showResult() { document.getElementById('test-wrapper').style.display = 'none'; document.getElementById('result-screen').style.display = 'block'; document.getElementById('final-name').innerText = userName + " さんの結果"; document.getElementById('final-score').innerText = totalScore; }
+    
+    // 【7：数学入力補助（分数・ルート・移動）】
+    function getFormulaText(node) {
+        let t = "";
+        node.childNodes.forEach(c => {
+            if(c.nodeType === 3) t += c.textContent;
+            else if(c.classList.contains('frac')) t += `(${getFormulaText(c.querySelector('.num'))})/(${getFormulaText(c.querySelector('.den'))})`;
+            else if(c.classList.contains('root-wrap')) t += `√(${getFormulaText(c.querySelector('.root-content'))})`;
+            else if(c.tagName === 'SUP') t += `^2`;
+            else t += getFormulaText(c);
+        });
+        return t;
+    }
+    function updateFocus(el) { document.querySelectorAll('.num, .den, .root-content').forEach(f => f.classList.remove('active-in')); lastActive = el; if(el) el.classList.add('active-in'); }
+    document.getElementById('user-input-area').onclick = (e) => updateFocus(e.target.closest('.num, .den, .root-content'));
+    function add(v) { if(lastActive) lastActive.appendChild(document.createTextNode(v)); else document.getElementById('user-input-area').appendChild(document.createTextNode(v)); }
+    function addVar(v) { const s = document.createElement('span'); s.className = "math-var"; s.innerText = v; if(lastActive) lastActive.appendChild(s); else document.getElementById('user-input-area').appendChild(s); }
+    function addPower() { const s = document.createElement('sup'); s.innerText = '2'; if(lastActive) lastActive.appendChild(s); else document.getElementById('user-input-area').appendChild(s); }
+    function addRoot() { const w = document.createElement('span'); w.className = 'root-wrap'; w.innerHTML = '<span class="root-symbol">√</span><span class="root-content" contenteditable="true"></span>'; document.getElementById('user-input-area').appendChild(w); updateFocus(w.querySelector('.root-content')); }
+    function addFrac() { const f = document.createElement('span'); f.className = 'frac'; f.innerHTML = '<span class="num" contenteditable="true"></span><span class="den" contenteditable="true"></span>'; document.getElementById('user-input-area').appendChild(f); updateFocus(f.querySelector('.num')); }
+    function moveNext() { if (lastActive && lastActive.classList.contains('num')) updateFocus(lastActive.closest('.frac').querySelector('.den')); else updateFocus(null); }
+    function backspace() { if(lastActive) { if(lastActive.childNodes.length > 0) lastActive.removeChild(lastActive.lastChild); else { const pb = lastActive.closest('.root-wrap, .frac'); if(pb) { updateFocus(null); document.getElementById('user-input-area').removeChild(pb); } } } else if(document.getElementById('user-input-area').lastChild) document.getElementById('user-input-area').removeChild(document.getElementById('user-input-area').lastChild); }
+    function clearAll() { document.getElementById('user-input-area').innerHTML = ""; lastActive = null; selectedWords = []; resetEnglish(); }
+</script>
+</body>
+</html>

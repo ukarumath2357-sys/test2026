@@ -6,9 +6,28 @@
     <title>実力判定テスト・完全版</title>
 
     <style>
-        /* --- 基本レイアウト --- */
-        body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #eef2f7; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
-        .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; padding: 10px; box-sizing: border-box; }
+        /* --- 基本レイアウト（横はみ出しを徹底防止） --- */
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background: #eef2f7; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            -webkit-text-size-adjust: 100%;
+        }
+        .container { 
+            width: 100%; 
+            max-width: 600px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            padding: 10px; 
+            box-sizing: border-box;
+        }
         
         /* --- ログイン画面 --- */
         #name-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #eef2f7; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -28,15 +47,21 @@
         .word-chip { background: #ffffff; border: 2px solid #ced6e0; color: #2f3542; padding: 12px 24px; border-radius: 35px; cursor: pointer; font-size: 20px; font-weight: bold; margin: 8px; transition: 0.2s; }
         .word-chip.selected { background: #2ed573; color: white; border-color: #26af5f; box-shadow: 0 3px 0 #219150; }
 
-        /* --- ボタン・グリッド --- */
+        /* --- ボタン・グリッド（ダブルタップズーム防止） --- */
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; background: #f1f2f6; padding: 10px; border-radius: 12px; }
-        .btn { padding: 15px 0; font-size: 24px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .btn { 
+            padding: 15px 0; font-size: 24px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; 
+            user-select: none; -webkit-user-select: none; 
+            touch-action: manipulation; /* 重要：ダブルタップズームを防止しタップ反応を高速化 */
+            -webkit-tap-highlight-color: transparent; 
+        }
         .btn-num { background: #ffffff; color: #2f3542; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .symbol { background: #ced6e0; color: #2f3542; }
         .submit { background: #2ed573; color: white; font-size: 20px; border:none; }
         .btn-reset { background: #ffa502; color: white; font-size: 20px; border:none; }
 
-        /* --- 数学記号（ルート補正済） --- */
+        /* --- 数学記号（ルートのズレを完璧に補正） --- */
         .math-var { font-family: 'Times New Roman', serif; font-style: italic; }
         .frac { display: inline-flex; flex-direction: column; vertical-align: middle; align-items: center; margin: 0 5px; font-size: 0.85em; }
         .frac .num { border-bottom: 2px solid #333; width: 100%; text-align: center; outline: none; min-width: 30px; min-height: 35px; }
@@ -74,7 +99,7 @@
         #apply-btn { display: inline-block; background: #ff4757; color: white !important; padding: 18px 40px; border-radius: 35px; text-decoration: none; font-weight: bold; font-size: 20px; box-shadow: 0 4px 15px rgba(255,71,87,0.3); transition: 0.3s; }
         #apply-btn:hover { background: #ff6b81; transform: scale(1.05); }
 
-        /* --- スマホ専用レスポンシブ --- */
+        /* --- スマホ専用レスポンシブ（最終調整） --- */
         @media (max-width: 768px) {
             body { padding: 0; }
             .container { width: 100%; max-width: 100%; padding: 8px; gap: 8px; }
@@ -188,12 +213,12 @@
     let currentIdx = 0, userName = "", timeLeft = 60, mathScore = 0, engScore = 0; 
     let timerInterval = null, lastActive = null, selectedWords = [];
 
-    /* --- ② データ（正解） --- */
+    /* --- ② データ（正解リスト） --- */
     const answers = ["-3", "12", "4x-2", "-4", "x=5", "x=7", "5個", "15分", "1700円", "a=4", "y=3", "36pi", "8pi", "S=pix^2", "V=5pix^2", "am", "are", "iplaytenniseveryday", "eats", "him", "canyouplaythepiano?", "must", "can", "doesn't", "didyoueatbreakfast?", "where", "whatisthis?", "because", "on", "igetupatseven"];
 
-    /* --- ③ データ（問題：縦並び整列） --- */
+    /* --- ③ データ（問題リスト：1問1行 縦並び整理） --- */
     const questions = [
-        /* 数学セクション (15問) */
+        /* 数学 (15問) */
         { q: "-8 - (-5) を計算せよ。", type: "math" },
         { q: "(-2)² × 3 を計算せよ。", type: "math" },
         { q: "3(2x - 4) - 2(x - 5) を簡潔にせよ。", type: "math" },
@@ -209,7 +234,7 @@
         { q: "半径2cm、高さ6cm の円錐の体積を求めよ。(円周率はπとする)", type: "math" },
         { q: "半径xの円の面積Sを求めよ。", type: "math", ansPrefix: "S=" },
         { q: "底面の半径x、高さ5の円柱の体積Vを求めよ。", type: "math", ansPrefix: "V=" },
-        /* 英語セクション (15問) */
+        /* 英語 (15問) */
         { q: "私は福岡出身です。 I ( ) from Fukuoka.", type: "select", opts: ["am", "is", "are"] },
         { q: "These ( ) my notebooks.", type: "input" },
         { q: "[ tennis / play / I / every day ] を並び替え。", type: "sort", words: ["I", "play", "tennis", "every day"] },
@@ -227,7 +252,7 @@
         { q: "[ I / at / up / get / seven ] を並び替え。", type: "sort", words: ["I", "get", "up", "at", "seven"] }
     ];
 
-    /* --- ④ 初期設定・タイマー --- */
+    /* --- ④ 初期設定・進行管理 --- */
     function startTest() { userName = document.getElementById('user-name').value.trim(); if(!userName) return alert("名前を入力してください"); document.getElementById('name-screen').style.display = "none"; document.getElementById('test-wrapper').style.display = "flex"; loadQuestion(); }
     function loadQuestion() { const q = questions[currentIdx]; const isMath = (q.type === "math"); document.getElementById('q-number').innerText = `問題 ${currentIdx + 1} / 30`; document.getElementById('q-text').innerText = q.q; document.getElementById('math-grid').style.display = isMath ? "grid" : "none"; document.getElementById('eng-grid').style.display = isMath ? "none" : "grid"; document.getElementById('ans-prefix').innerText = q.ansPrefix || ""; clearAll(); setupEnglish(q); startTimer(); }
     function startTimer() { timeLeft = 60; document.getElementById('timer-display').innerText = timeLeft; if(timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { timeLeft--; document.getElementById('timer-display').innerText = timeLeft; if(timeLeft <= 0) { clearInterval(timerInterval); handleAnswer(true); } }, 1000); }
@@ -236,7 +261,7 @@
     function moveBackToPool(index) { const item = selectedWords[index]; const btn = document.getElementById(item.id); if(btn) { btn.classList.remove('selected'); btn.style.opacity = "1"; } selectedWords.splice(index, 1); renderEnglishAnswer(); }
     function renderEnglishAnswer() { const area = document.getElementById('user-input-area'); area.innerHTML = ""; selectedWords.forEach((item, index) => { const b = document.createElement('button'); b.className = "word-chip selected"; b.innerText = item.word; b.onclick = () => moveBackToPool(index); area.appendChild(b); }); }
 
-    /* --- ⑤ 判定・通信 --- */
+    /* --- ⑤ 判定・通信（非同期） --- */
     async function handleAnswer(isTimeout = false) {
         if(timerInterval) clearInterval(timerInterval);
         const q = questions[currentIdx]; const mathArea = document.getElementById('user-input-area');
@@ -264,6 +289,8 @@
         }).catch(e => { clearInterval(shuffleInterval); dNum.innerText = "--%"; document.getElementById('next-btn').style.display = "block"; });
     }
     function closeFeedback() { document.getElementById('feedback-overlay').style.display = "none"; document.getElementById('next-btn').style.display = "none"; currentIdx++; if(currentIdx < 30) loadQuestion(); else showResult(); }
+    
+    /* --- ⑥ 結果画面・偏差値・色制御 --- */
     function showResult() { 
         document.getElementById('test-wrapper').style.display = 'none'; document.getElementById('result-screen').style.display = 'block'; 
         const total = mathScore + engScore;
@@ -276,7 +303,7 @@
         let offerCheckTimer = setInterval(() => { const ssText = document.getElementById('final-total-ss').innerText; if (ssText !== "--") { if (parseFloat(ssText) <= 60) document.getElementById('course-offer').style.display = 'block'; clearInterval(offerCheckTimer); } }, 1000);
     }
 
-    /* --- ⑥ 補助ツール --- */
+    /* --- ⑦ 数式補助ツール・入力補助 --- */
     function getFormulaText(node) { let t = ""; node.childNodes.forEach(c => { if(c.nodeType === 3) t += c.textContent; else if(c.classList && c.classList.contains('frac')) t += `(${getFormulaText(c.querySelector('.num'))})/(${getFormulaText(c.querySelector('.den'))})`; else if(c.classList && c.classList.contains('root-wrap')) t += `√(${getFormulaText(c.querySelector('.root-content'))})`; else if(c.tagName === 'SUP') t += `^2`; else t += getFormulaText(c); }); return t; }
     function updateFocus(el) { document.querySelectorAll('.num, .den, .root-content').forEach(f => f.classList.remove('active-in')); lastActive = el; if(el) el.classList.add('active-in'); }
     document.getElementById('user-input-area').onclick = (e) => { const target = e.target.closest('.num, .den, .root-content'); if(target) updateFocus(target); };
@@ -288,16 +315,6 @@
     function moveNext() { if (lastActive && lastActive.classList.contains('num')) updateFocus(lastActive.closest('.frac').querySelector('.den')); else updateFocus(null); }
     function backspace() { if(lastActive) { if(lastActive.childNodes.length > 0) lastActive.removeChild(lastActive.lastChild); else { const pb = lastActive.closest('.root-wrap, .frac'); if(pb) { updateFocus(null); document.getElementById('user-input-area').removeChild(pb); } } } else if(document.getElementById('user-input-area').lastChild) document.getElementById('user-input-area').removeChild(document.getElementById('user-input-area').lastChild); }
     function clearAll() { const mathArea = document.getElementById('user-input-area'); const engInput = document.getElementById('eng-text-input'); mathArea.innerHTML = ""; mathArea.style.display = "flex"; engInput.style.display = "none"; engInput.value = ""; document.querySelectorAll('.word-chip').forEach(btn => { btn.classList.remove('selected'); btn.style.opacity = "1"; }); selectedWords = []; lastActive = null; }
-
-let lastTouchTime = 0;
-
-document.addEventListener('touchend', function (e) {
-  const now = new Date().getTime();
-  if (now - lastTouchTime < 300) {
-    e.preventDefault(); // ダブルタップだけ防ぐ
-  }
-  lastTouchTime = now;
-}, { passive: false });
 </script>
 </body>
 </html>

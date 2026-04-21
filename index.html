@@ -27,7 +27,7 @@
         .bg-correct { background: #f0fff4 !important; }
         .bg-incorrect { background: #fff5f5 !important; }
 
-        /* --- 問題表示エリア（タイマー分離型） --- */
+        /* --- 問題表示エリア（タイマー被り防止） --- */
         .question-container { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 10px solid #2ed573; display: flex; flex-direction: column; gap: 10px; }
         .q-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         #q-number { color: #888; font-size: 16px; font-weight: bold; }
@@ -37,6 +37,8 @@
         /* --- 回答操作エリア --- */
         .panel { background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box; }
         .answer-area { width: 100%; min-height: 100px; padding: 15px; margin-bottom: 15px; border: 2px solid #dfe4ea; border-radius: 12px; background: #fcfcfc; display: flex; align-items: center; flex-wrap: wrap; box-sizing: border-box; font-size: 40px; }
+        
+        /* 英語入力欄のCSS */
         #eng-text-input { width: 100%; border: 3px solid #2ed573; border-radius: 12px; font-size: 32px; padding: 15px; box-sizing: border-box; background: white; outline: none; display: none; }
 
         /* --- 数学記号 --- */
@@ -91,6 +93,7 @@
             #q-text { font-size: 20px; }
             .answer-area { min-height: 80px; font-size: 32px; padding: 8px; }
             .btn { font-size: 20px; min-height: 55px; }
+            #eng-text-input { font-size: 24px; padding: 12px; }
             .subject-container { flex-direction: column; gap: 10px; }
             #apply-btn { width: 100%; box-sizing: border-box; }
         }
@@ -192,10 +195,10 @@
     const POINTS_PER_QUESTION = 2;
     let currentIdx = 0, userName = "", timeLeft = 60, mathScore = 0, engScore = 0, timerInterval = null, lastActive = null, selectedWords = [];
 
-    /* --- ② データ（正解リスト） --- */
+    /* --- ② データ（正解） --- */
     const answers = ["-3", "12", "4x-2", "-4", "x=5", "x=7", "5個", "15分", "1700円", "a=4", "y=3", "36pi", "8pi", "S=pix^2", "V=5pix^2", "am", "are", "iplaytenniseveryday", "eats", "him", "canyouplaythepiano?", "must", "can", "doesn't", "didyoueatbreakfast?", "where", "whatisthis?", "because", "on", "igetupatseven"];
 
-    /* --- ③ データ（問題リスト：1問1行 縦並び整理） --- */
+    /* --- ③ データ（問題：縦並び整列） --- */
     const questions = [
         { q: "-8 - (-5) を計算せよ。", type: "math" },
         { q: "(-2)² × 3 を計算せよ。", type: "math" },
@@ -229,16 +232,56 @@
         { q: "[ I / at / up / get / seven ] を並び替え。", type: "sort", words: ["I", "get", "up", "at", "seven"] }
     ];
 
-    /* --- ④ 初期化・進行管理 --- */
+    /* --- ④ 初期化・進行 --- */
     function startTest() { userName = document.getElementById('user-name').value.trim(); if(!userName) return alert("名前を入力してね！"); document.getElementById('name-screen').style.display = "none"; document.getElementById('test-wrapper').style.display = "flex"; loadQuestion(); }
     function loadQuestion() { const q = questions[currentIdx]; const isMath = (q.type === "math"); document.getElementById('q-number').innerText = `問題 ${currentIdx + 1} / 30`; document.getElementById('q-text').innerText = q.q; document.getElementById('math-grid').style.display = isMath ? "grid" : "none"; document.getElementById('eng-grid').style.display = isMath ? "none" : "grid"; document.getElementById('ans-prefix').innerText = q.ansPrefix || ""; clearAll(); setupEnglish(q); startTimer(); }
     function startTimer() { timeLeft = 60; document.getElementById('timer-display').innerText = timeLeft; if(timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { timeLeft--; document.getElementById('timer-display').innerText = timeLeft; if(timeLeft <= 0) { clearInterval(timerInterval); handleAnswer(true); } }, 1000); }
-    function setupEnglish(q) { const optDiv = document.getElementById('eng-options'); const mathArea = document.getElementById('user-input-area'); const engInput = document.getElementById('eng-text-input'); optDiv.innerHTML = ""; selectedWords = []; if (q.type === "math") { mathArea.style.display = "flex"; engInput.style.display = "none"; return; } if (q.type === "sort") { mathArea.style.display = "flex"; engInput.style.display = "none"; q.words.forEach((word, index) => { const b = document.createElement('button'); b.className = "word-chip"; b.innerText = word; b.id = `wp-${index}`; b.onclick = () => moveToAnswer(word, b.id); optDiv.appendChild(b); }); } else { mathArea.style.display = "none"; engInput.style.display = "block"; engInput.readOnly = (q.type === "select"); if (q.type === "select") { q.opts.forEach(o => { const b = document.createElement('button'); b.className = "word-chip"; b.innerText = o; b.onclick = function() { engInput.focus(); engInput.value = this.innerText; }; optDiv.appendChild(b); }); } else if (q.type === "input") { setTimeout(() => engInput.focus(), 100); } } }
+
+    /* --- ⑤ 英語・数学セットアップ：表示を100%保証するように強化 --- */
+    function setupEnglish(q) { 
+        const optDiv = document.getElementById('eng-options'); 
+        const mathArea = document.getElementById('user-input-area'); 
+        const engInput = document.getElementById('eng-text-input'); 
+        optDiv.innerHTML = ""; selectedWords = []; 
+        
+        if (q.type === "math") { 
+            mathArea.style.display = "flex"; engInput.style.display = "none"; return; 
+        } 
+        if (q.type === "sort") { 
+            mathArea.style.display = "flex"; engInput.style.display = "none"; 
+            q.words.forEach((word, index) => { 
+                const b = document.createElement('button'); b.className = "word-chip"; b.innerText = word; b.id = `wp-${index}`; 
+                b.onclick = () => moveToAnswer(word, b.id); optDiv.appendChild(b); 
+            }); 
+        } else { 
+            // 英語（選択・入力）問題では mathArea を確実に隠し、inputを表示する
+            mathArea.style.display = "none"; 
+            engInput.style.display = "block"; 
+            engInput.readOnly = (q.type === "select"); 
+            
+            if (q.type === "select") { 
+                q.opts.forEach(o => { 
+                    const b = document.createElement('button'); b.className = "word-chip"; b.innerText = o; 
+                    b.onclick = function() { 
+                        // ★重要：クリックした瞬間に数学エリア隠しと英語表示を再保証する
+                        mathArea.style.display = "none";
+                        engInput.style.display = "block"; 
+                        engInput.readOnly = true;
+                        engInput.value = this.innerText; 
+                        engInput.focus();
+                    }; 
+                    optDiv.appendChild(b); 
+                }); 
+            } else if (q.type === "input") { 
+                setTimeout(() => engInput.focus(), 100); 
+            } 
+        } 
+    }
+
     function moveToAnswer(word, id) { const btn = document.getElementById(id); if (btn.classList.contains('selected')) return; btn.classList.add('selected'); btn.style.opacity = "0.3"; selectedWords.push({ word: word, id: id }); renderEnglishAnswer(); }
     function moveBackToPool(index) { const item = selectedWords[index]; const btn = document.getElementById(item.id); if(btn) { btn.classList.remove('selected'); btn.style.opacity = "1"; } selectedWords.splice(index, 1); renderEnglishAnswer(); }
     function renderEnglishAnswer() { const area = document.getElementById('user-input-area'); area.innerHTML = ""; selectedWords.forEach((item, index) => { const b = document.createElement('button'); b.className = "word-chip selected"; b.innerText = item.word; b.onclick = () => moveBackToPool(index); area.appendChild(b); }); }
 
-    /* --- ⑤ 判定・通信（非同期） --- */
     async function handleAnswer(isTimeout = false) {
         if(timerInterval) clearInterval(timerInterval);
         const q = questions[currentIdx]; const mathArea = document.getElementById('user-input-area'); const engInput = document.getElementById('eng-text-input');
@@ -262,6 +305,7 @@
         }).catch(e => { clearInterval(shuffleInterval); dNum.innerText = "--%"; document.getElementById('next-btn').style.display = "block"; });
     }
     function closeFeedback() { document.getElementById('feedback-overlay').style.display = "none"; document.getElementById('next-btn').style.display = "none"; currentIdx++; if(currentIdx < 30) loadQuestion(); else showResult(); }
+    
     function showResult() { 
         document.getElementById('test-wrapper').style.display = 'none'; document.getElementById('result-screen').style.display = 'block'; 
         const total = mathScore + engScore; document.getElementById('final-name').innerText = userName + " さんの診断結果"; 
@@ -273,7 +317,6 @@
         let offerCheckTimer = setInterval(() => { const ssText = document.getElementById('final-total-ss').innerText; if (ssText !== "--") { if (parseFloat(ssText) <= 60) document.getElementById('course-offer').style.display = 'block'; clearInterval(offerCheckTimer); } }, 1000);
     }
 
-    /* --- ⑥ 補助ツール・リセット --- */
     function getFormulaText(node) { let t = ""; node.childNodes.forEach(c => { if(c.nodeType === 3) t += c.textContent; else if(c.classList && c.classList.contains('frac')) t += `(${getFormulaText(c.querySelector('.num'))})/(${getFormulaText(c.querySelector('.den'))})`; else if(c.classList && c.classList.contains('root-wrap')) t += `√(${getFormulaText(c.querySelector('.root-content'))})`; else if(c.tagName === 'SUP') t += `^2`; else t += getFormulaText(c); }); return t; }
     function updateFocus(el) { document.querySelectorAll('.num, .den, .root-content').forEach(f => f.classList.remove('active-in')); lastActive = el; if(el) el.classList.add('active-in'); }
     document.getElementById('user-input-area').onclick = (e) => { const target = e.target.closest('.num, .den, .root-content'); if(target) updateFocus(target); };
@@ -285,6 +328,7 @@
     function moveNext() { if (lastActive && lastActive.classList.contains('num')) updateFocus(lastActive.closest('.frac').querySelector('.den')); else updateFocus(null); }
     function backspace() { if(lastActive) { if(lastActive.childNodes.length > 0) lastActive.removeChild(lastActive.lastChild); else { const pb = lastActive.closest('.root-wrap, .frac'); if(pb) { updateFocus(null); document.getElementById('user-input-area').removeChild(pb); } } } else if(document.getElementById('user-input-area').lastChild) document.getElementById('user-input-area').removeChild(document.getElementById('user-input-area').lastChild); }
 
+    /* --- clearAll：英語問題での表示・非表示をチャッピー指定どおり厳格化 --- */
     function clearAll() { 
         const mathArea = document.getElementById('user-input-area'); 
         const engInput = document.getElementById('eng-text-input'); 
@@ -292,8 +336,13 @@
         document.querySelectorAll('.word-chip').forEach(btn => { btn.classList.remove('selected'); btn.style.opacity = "1"; }); 
         selectedWords = []; lastActive = null; 
         const q = questions[currentIdx];
-        if (q.type === "math" || q.type === "sort") { mathArea.style.display = "flex"; engInput.style.display = "none"; }
-        else { mathArea.style.display = "none"; engInput.style.display = "block"; }
+        if (q.type === "math" || q.type === "sort") { 
+            mathArea.style.display = "flex"; engInput.style.display = "none"; 
+        } else { 
+            mathArea.style.display = "none"; engInput.style.display = "block"; 
+            engInput.readOnly = (q.type === "select");
+            if (q.type === "input") { setTimeout(() => engInput.focus(), 50); }
+        }
     }
 
     (function() {

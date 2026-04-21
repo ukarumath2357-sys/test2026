@@ -2,33 +2,33 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>実力判定テスト・完全版</title>
 
     <style>
-        /* 基本レイアウト */
+        /* --- 基本レイアウト --- */
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #eef2f7; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         .container { width: 95%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; }
         
-        /* ログイン画面 */
+        /* --- ログイン画面 --- */
         #name-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #eef2f7; z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .name-box { background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 80%; text-align: center; display: flex; flex-direction: column; align-items: center; }
         .name-input { width: 90%; padding: 15px; font-size: 20px; border: 2px solid #dfe4ea; border-radius: 10px; margin-bottom: 20px; outline: none; }
         
-        /* 問題表示 */
+        /* --- 問題表示エリア --- */
         .question-container { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 10px solid #2ed573; position: relative; min-height: 120px; }
         #timer-display { position: absolute; top: 20px; right: 30px; font-size: 32px; font-weight: bold; color: #ff4757; background: #fff5f5; padding: 10px 20px; border-radius: 10px; border: 2px solid #ff4757; }
         #q-text { font-size: 28px; font-weight: bold; line-height: 1.6; margin: 0; width: 80%; }
         #q-number { color: #888; font-size: 16px; margin-bottom: 8px; }
 
-        /* 回答エリア */
+        /* --- 回答操作エリア --- */
         .panel { background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box; }
         .answer-area { width: 100%; min-height: 120px; padding: 15px; margin-bottom: 15px; border: 2px solid #dfe4ea; border-radius: 12px; background: #fcfcfc; display: flex; align-items: center; flex-wrap: wrap; box-sizing: border-box; font-size: 40px; }
-        
         #eng-text-input { width: 100%; border: 3px solid #2ed573; border-radius: 12px; font-size: 32px; padding: 15px; box-sizing: border-box; background: white; outline: none; display: none; }
         .word-chip { background: #ffffff; border: 2px solid #ced6e0; color: #2f3542; padding: 12px 24px; border-radius: 35px; cursor: pointer; font-size: 20px; font-weight: bold; margin: 8px; transition: 0.2s; }
         .word-chip.selected { background: #2ed573; color: white; border-color: #26af5f; box-shadow: 0 3px 0 #219150; }
 
-        /* ボタン・グリッド */
+        /* --- ボタン・グリッド --- */
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; background: #f1f2f6; padding: 10px; border-radius: 12px; }
         .btn { padding: 15px 0; font-size: 24px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .btn-num { background: #ffffff; color: #2f3542; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -36,25 +36,26 @@
         .submit { background: #2ed573; color: white; font-size: 20px; border-radius: 12px; border:none; }
         .btn-reset { background: #ffa502; color: white; font-size: 20px; border-radius: 12px; border:none; }
 
-        /* 数学記号 */
+        /* --- 数学記号（ルート修正箇所） --- */
         .math-var { font-family: 'Times New Roman', serif; font-style: italic; }
         .frac { display: inline-flex; flex-direction: column; vertical-align: middle; align-items: center; margin: 0 5px; font-size: 0.85em; }
         .frac .num { border-bottom: 2px solid #333; width: 100%; text-align: center; outline: none; min-width: 30px; min-height: 35px; }
         .frac .den { width: 100%; text-align: center; outline: none; min-width: 30px; min-height: 35px; }
-        .root-wrap { display: inline-flex; align-items: stretch; margin: 0 2px; vertical-align: middle; }
-        .root-symbol { font-size: 1.1em; line-height: 1; vertical-align: bottom; }
+        
+        /* チャッピー指定の修正反映 */
+        .root-wrap { display: inline-flex; align-items: flex-start; margin: 0 2px; vertical-align: middle; }
+        .root-symbol { font-size: 1.2em; line-height: 1; margin-right: -3px; transform: translateY(2px); }
         .root-content { border-top: 2px solid #333; min-width: 25px; min-height: 35px; padding: 0 3px; outline: none; margin-top: 2px; }
+        
         sup { font-size: 0.6em; vertical-align: super; }
         .active-in { background: #fffde7; outline: 2px solid #fbc02d !important; border-radius: 4px; }
         .frac-icon { display: flex; flex-direction: column; align-items: center; }
         .box { width: 12px; height: 12px; border: 1.5px solid #333; background: #fff; margin: 1px; border-radius: 1px; }
         .line { width: 18px; height: 2px; background: #333; }
 
-        /* 判定画面 */
+        /* --- 判定・結果画面 --- */
         #feedback-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 500; flex-direction: column; align-items: center; justify-content: center; }
         .digital-num { font-family: 'Consolas', monospace; font-size: 80px; font-weight: bold; color: #2f3542; letter-spacing: -2px; }
-        
-        /* 結果画面（強化デザイン） */
         #result-screen { display: none; text-align: center; padding: 30px !important; background: white; border-radius: 20px; width: 95%; max-width: 600px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 2px solid #dfe4ea; }
         .result-header { font-size: 24px; margin-bottom: 20px; border-bottom: 2px solid #2ed573; padding-bottom: 10px; font-weight: bold; }
         .summary-card { background: linear-gradient(135deg, #f1f2f6 0%, #dfe4ea 100%); padding: 25px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -66,17 +67,44 @@
         .res-score { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
         .res-sub { font-size: 16px; margin-bottom: 10px; }
         .ss-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; background: white; font-weight: bold; font-size: 20px; }
-        
-        /* 偏差値の色分け用 */
         .ss-blue { color: #0984e3 !important; }
         .ss-black { color: #2d3436 !important; }
         .ss-red { color: #d63031 !important; }
 
-        /* 申し込み導線 */
+        /* --- 申し込み導線 --- */
         #course-offer { margin-top: 30px; padding: 25px; border: 2px dashed #ff4757; border-radius: 15px; background-color: #fffafb; animation: fadeIn 0.8s ease-out; display: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         #apply-btn { display: inline-block; background: #ff4757; color: white !important; padding: 15px 40px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 18px; box-shadow: 0 4px 15px rgba(255,71,87,0.3); transition: 0.3s; }
         #apply-btn:hover { background: #ff6b81; transform: scale(1.05); }
+
+        /* --- スマホ最適化 --- */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { width: 100%; gap: 10px; }
+            .name-box { width: 92%; padding: 24px; }
+            .name-input { font-size: 18px; padding: 12px; }
+            .question-container { padding: 18px; min-height: auto; }
+            #q-number { font-size: 14px; }
+            #q-text { font-size: 20px; width: 100%; padding-right: 70px; box-sizing: border-box; }
+            #timer-display { top: 14px; right: 14px; font-size: 22px; padding: 6px 12px; }
+            .panel { padding: 14px; }
+            .answer-area { padding: 10px; font-size: 30px; min-height: 90px; }
+            #eng-text-input { font-size: 24px; padding: 12px; }
+            .grid { gap: 6px; padding: 8px; }
+            .btn { font-size: 18px; padding: 12px 0; min-height: 52px; }
+            .digital-num { font-size: 56px; }
+            #feedback-text { font-size: 46px !important; }
+            #result-screen { width: 100%; padding: 18px !important; }
+            .result-header { font-size: 20px; }
+            .summary-card { padding: 18px; }
+            .subject-container { flex-direction: column; }
+            .subject-card { padding: 16px; margin-bottom: 10px; }
+            .res-score { font-size: 28px; }
+            .summary-card .res-score { font-size: 40px; }
+            .ss-badge { font-size: 18px; padding: 6px 12px; }
+            #course-offer { padding: 18px; }
+            #apply-btn { width: 100%; box-sizing: border-box; text-align: center; padding: 14px 20px; }
+        }
     </style>
 </head>
 <body>
@@ -138,145 +166,95 @@
 
 <div id="result-screen">
     <div class="result-header" id="final-name"></div>
-
     <div class="summary-card">
         <div class="res-label" style="color:#666;">総合判定</div>
-        <div class="res-score" style="color:#2f3542; font-size:54px;">
-            <span id="res-total-score">0</span><span style="font-size:24px;"> / 60点</span>
-        </div>
-        <div class="res-sub" style="color:#666;">
-            正解数：<span id="res-total-correct">0</span> / 30問
-        </div>
-        <div class="ss-badge" id="ss-total-box">
-            偏差値：<span id="final-total-ss">--</span>
-        </div>
+        <div class="res-score" style="color:#2f3542; font-size:54px;"><span id="res-total-score">0</span><span style="font-size:24px;"> / 60点</span></div>
+        <div class="res-sub" style="color:#666;">正解数：<span id="res-total-correct">0</span> / 30問</div>
+        <div class="ss-badge" id="ss-total-box">偏差値：<span id="final-total-ss">--</span></div>
     </div>
-
     <div class="subject-container">
         <div class="subject-card math-card">
             <div class="res-label">数学</div>
             <div class="res-score"><span id="res-math-score">0</span><span style="font-size:16px;">/30</span></div>
             <div class="res-sub">正解：<span id="res-math-correct">0</span>/15問</div>
-            <div class="ss-badge" id="ss-math-box">
-                <span id="final-math-ss">--</span>
-            </div>
+            <div class="ss-badge" id="ss-math-box"><span id="final-math-ss">--</span></div>
         </div>
-
         <div class="subject-card eng-card">
             <div class="res-label">英語</div>
             <div class="res-score"><span id="res-eng-score">0</span><span style="font-size:16px;">/30</span></div>
             <div class="res-sub">正解：<span id="res-eng-correct">0</span>/15問</div>
-            <div class="ss-badge" id="ss-eng-box">
-                <span id="final-eng-ss">--</span>
-            </div>
+            <div class="ss-badge" id="ss-eng-box"><span id="final-eng-ss">--</span></div>
         </div>
     </div>
-
     <div id="course-offer">
-        <p style="font-weight:bold; color:#d63031; font-size:20px; margin-bottom:10px;">
-            【重要】夏期講習へのご案内
-        </p>
-        <p style="font-size:15px; color:#2f3542; margin-bottom:20px; line-height:1.6;">
-            現在の実力からさらに飛躍するために、<br>
-            「夏期講習」での集中対策を強くおすすめします。
-        </p>
-        <a href="https://example.com/apply" id="apply-btn" target="_blank">
-            夏期講習に申し込む
-        </a>
+        <p style="font-weight:bold; color:#d63031; font-size:20px; margin-bottom:10px;">【重要】夏期講習へのご案内</p>
+        <p style="font-size:15px; color:#2f3542; margin-bottom:20px; line-height:1.6;">現在の実力からさらに飛躍するために、<br>「夏期講習」での集中対策を強くおすすめします。</p>
+        <a href="https://example.com/apply" id="apply-btn" target="_blank">夏期講習に申し込む</a>
     </div>
-    
     <p style="color:#888; font-size:12px; margin-top:20px;">※偏差値は全受験者の平均から算出されています</p>
 </div>
 
 <script>
+    /* --- ① 定数設定 --- */
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzKt1Tn9NbQ-nEYmLNr1Z1KtkVoaO3bufALPvQgNYGFXMNpLrPFr66m3cfpCskIk7XD/exec";
     const POINTS_PER_QUESTION = 2;
     
+    /* --- ② 状態管理 --- */
     let currentIdx = 0, userName = "", timeLeft = 60;
     let mathScore = 0, engScore = 0; 
     let timerInterval = null, lastActive = null, selectedWords = [];
 
-    // --- 問題・正解データ ---
-    const answers = [
-        "-3", "12", "4x-2", "-4", "x=5", "x=7", "5個", "15分", "1700円", "a=4", "y=3", "36pi", "8pi", "S=pix^2", "V=5pix^2", 
-        "am", "are", "iplaytenniseveryday", "eats", "him", "canyouplaythepiano?", "must", "can", "doesn't", "didyoueatbreakfast?", 
-        "where", "whatisthis?", "because", "on", "igetupatseven"
-    ];
+    /* --- ③ データ（問題・正解） --- */
+    const answers = ["-3", "12", "4x-2", "-4", "x=5", "x=7", "5個", "15分", "1700円", "a=4", "y=3", "36pi", "8pi", "S=pix^2", "V=5pix^2", "am", "are", "iplaytenniseveryday", "eats", "him", "canyouplaythepiano?", "must", "can", "doesn't", "didyoueatbreakfast?", "where", "whatisthis?", "because", "on", "igetupatseven"];
 
     const questions = [
-        { q: "-8 - (-5) を計算せよ。", type: "math" }, { q: "(-2)² × 3 を計算せよ。", type: "math" }, { q: "3(2x - 4) - 2(x - 5) を簡潔にせよ。", type: "math" }, { q: "x=3, y=-2 のとき、2x + 5y の値を求めよ。", type: "math" }, { q: "5x - 7 = 2x + 8 を解け。", type: "math", ansPrefix: "x=" }, { q: "(x-1)/3 = 2 を解け。", type: "math", ansPrefix: "x=" }, { q: "りんご120円、みかん80円 合計10個で1000円。りんごは何個？", type: "math", ansSuffix: "個" }, { q: "1200mの道のりを分速80mで歩くと何分かかる？", type: "math", ansSuffix: "分" }, { q: "2000円の15%引きは何円？", type: "math", ansSuffix: "円" }, { q: "yはxに比例し、x=3のときy=12。比例定数aを求めよ。", type: "math", ansPrefix: "a=" }, { q: "yはxに反比例し、x=2のときy=6。x=4のときのyを求めよ。", type: "math", ansPrefix: "y=" }, { q: "半径3cmの球の表面積を求めよ。(円周率はπとする)", type: "math" }, { q: "半径2cm、高さ6cm の円錐の体積を求めよ。(円周率はπとする)", type: "math" }, { q: "半径xの円の面積Sを求めよ。", type: "math", ansPrefix: "S=" }, { q: "底面の半径x、高さ5の円柱の体積Vを求めよ。", type: "math", ansPrefix: "V=" },
-        { q: "私は福岡出身です。 I ( ) from Fukuoka.", type: "select", opts: ["am", "is", "are"] }, { q: "These ( ) my notebooks.", type: "input" }, { q: "[ tennis / play / I / every day ] を並び替え。", type: "sort", words: ["I", "play", "tennis", "every day"] }, { q: "He ( ) lunch at 12:00.", type: "select", opts: ["eat", "eats", "eating"] }, { q: "That is my teacher. I like ( ).", type: "input" }, { q: "[ you / the / can / piano / play / ? ] を並び替え。", type: "sort", words: ["you", "the", "can", "piano", "play", "?"], type: "sort" }, { q: "私たちはここで静かにしなければなりません。 We ( ) be quiet here.", type: "select", opts: ["must", "can", "will"] }, { q: "You ( ) go home now.", type: "input" }, { q: "彼は英語を話しません。 He ( ) speak English.", type: "select", opts: ["don't", "doesn't", "isn't"] }, { q: "[ you / breakfast / eat / did / ? ] を並び替え。", type: "sort", words: ["you", "breakfast", "eat", "did", "?"], type: "sort" }, { q: "あなたはどこに住んでいますか？ ( ) do you live?", type: "input" }, { q: "[ this / is / what / ? ] を並び替え。", type: "sort", words: ["this", "is", "what", "?"], type: "sort" }, { q: "忙しかったので行きませんでした。 I didn't go ... ( ) I was busy.", type: "select", opts: ["because", "so", "but"] }, { q: "本は机の上にあります。 The book is ( ) the desk.", type: "input" }, { q: "[ I / at / up / get / seven ] を並び替え。", type: "sort", words: ["I", "get", "up", "at", "seven"], type: "sort" }
+        /* --- 数学セクション (15問) --- */
+        { q: "-8 - (-5) を計算せよ。", type: "math" },
+        { q: "(-2)² × 3 を計算せよ。", type: "math" },
+        { q: "3(2x - 4) - 2(x - 5) を簡潔にせよ。", type: "math" },
+        { q: "x=3, y=-2 のとき、2x + 5y の値を求めよ。", type: "math" },
+        { q: "5x - 7 = 2x + 8 を解け。", type: "math", ansPrefix: "x=" },
+        { q: "(x-1)/3 = 2 を解け。", type: "math", ansPrefix: "x=" },
+        { q: "りんご120円、みかん80円 合計10個で1000円。りんごは何個？", type: "math", ansSuffix: "個" },
+        { q: "1200mの道のりを分速80mで歩くと何分かかる？", type: "math", ansSuffix: "分" },
+        { q: "2000円の15%引きは何円？", type: "math", ansSuffix: "円" },
+        { q: "yはxに比例し、x=3のときy=12。比例定数aを求めよ。", type: "math", ansPrefix: "a=" },
+        { q: "yはxに反比例し、x=2のときy=6。x=4のときのyを求めよ。", type: "math", ansPrefix: "y=" },
+        { q: "半径3cmの球の表面積を求めよ。(円周率はπとする)", type: "math" },
+        { q: "半径2cm、高さ6cm の円錐の体積を求めよ。(円周率はπとする)", type: "math" },
+        { q: "半径xの円の面積Sを求めよ。", type: "math", ansPrefix: "S=" },
+        { q: "底面の半径x、高さ5の円柱の体積Vを求めよ。", type: "math", ansPrefix: "V=" },
+
+        /* --- 英語セクション (15問) --- */
+        { q: "私は福岡出身です。 I ( ) from Fukuoka.", type: "select", opts: ["am", "is", "are"] },
+        { q: "These ( ) my notebooks.", type: "input" },
+        { q: "[ tennis / play / I / every day ] を並び替え。", type: "sort", words: ["I", "play", "tennis", "every day"] },
+        { q: "He ( ) lunch at 12:00.", type: "select", opts: ["eat", "eats", "eating"] },
+        { q: "That is my teacher. I like ( ).", type: "input" },
+        { q: "[ you / the / can / piano / play / ? ] を並び替え。", type: "sort", words: ["you", "the", "can", "piano", "play", "?"] },
+        { q: "私たちはここで静かにしなければなりません。 We ( ) be quiet here.", type: "select", opts: ["must", "can", "will"] },
+        { q: "You ( ) go home now.", type: "input" },
+        { q: "彼は英語を話しません。 He ( ) speak English.", type: "select", opts: ["don't", "doesn't", "isn't"] },
+        { q: "[ you / breakfast / eat / did / ? ] を並び替え。", type: "sort", words: ["you", "breakfast", "eat", "did", "?"] },
+        { q: "あなたはどこに住んでいますか？ ( ) do you live?", type: "input" },
+        { q: "[ this / is / what / ? ] を並び替え。", type: "sort", words: ["this", "is", "what", "?"] },
+        { q: "忙しかったので行きませんでした。 I didn't go ... ( ) I was busy.", type: "select", opts: ["because", "so", "but"] },
+        { q: "本は机の上にあります。 The book is ( ) the desk.", type: "input" },
+        { q: "[ I / at / up / get / seven ] を並び替え。", type: "sort", words: ["I", "get", "up", "at", "seven"] }
     ];
 
-    function startTest() {
-        userName = document.getElementById('user-name').value.trim();
-        if(!userName) return alert("名前を入力してください");
-        document.getElementById('name-screen').style.display = "none";
-        document.getElementById('test-wrapper').style.display = "flex";
-        loadQuestion();
-    }
+    /* --- ④ 初期化・タイマー制御 --- */
+    function startTest() { userName = document.getElementById('user-name').value.trim(); if(!userName) return alert("名前を入力してください"); document.getElementById('name-screen').style.display = "none"; document.getElementById('test-wrapper').style.display = "flex"; loadQuestion(); }
+    function loadQuestion() { const q = questions[currentIdx]; const isMath = (q.type === "math"); document.getElementById('q-number').innerText = `問題 ${currentIdx + 1} / 30`; document.getElementById('q-text').innerText = q.q; document.getElementById('math-grid').style.display = isMath ? "grid" : "none"; document.getElementById('eng-grid').style.display = isMath ? "none" : "grid"; document.getElementById('ans-prefix').innerText = q.ansPrefix || ""; clearAll(); setupEnglish(q); startTimer(); }
+    function startTimer() { timeLeft = 60; document.getElementById('timer-display').innerText = timeLeft; if(timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { timeLeft--; document.getElementById('timer-display').innerText = timeLeft; if(timeLeft <= 0) { clearInterval(timerInterval); handleAnswer(true); } }, 1000); }
 
-    function loadQuestion() { 
-        const q = questions[currentIdx]; 
-        const isMath = (q.type === "math"); 
-        document.getElementById('q-number').innerText = `問題 ${currentIdx + 1} / 30`; 
-        document.getElementById('q-text').innerText = q.q; 
-        document.getElementById('math-grid').style.display = isMath ? "grid" : "none";
-        document.getElementById('eng-grid').style.display = isMath ? "none" : "grid";
-        document.getElementById('ans-prefix').innerText = q.ansPrefix || "";
-        clearAll(); setupEnglish(q); startTimer(); 
-    }
+    /* --- ⑤ 英語・並び替え処理 --- */
+    function setupEnglish(q) { const optDiv = document.getElementById('eng-options'); const mathArea = document.getElementById('user-input-area'); const engInput = document.getElementById('eng-text-input'); optDiv.innerHTML = ""; selectedWords = []; if (q.type === "math") { mathArea.style.display = "flex"; engInput.style.display = "none"; return; } if (q.type === "sort") { mathArea.style.display = "flex"; engInput.style.display = "none"; q.words.forEach((word, index) => { const b = document.createElement('button'); b.className = "word-chip"; b.innerText = word; b.id = `wp-${index}`; b.onclick = () => moveToAnswer(word, b.id); optDiv.appendChild(b); }); } else { mathArea.style.display = "none"; engInput.style.display = "block"; engInput.readOnly = (q.type === "select"); if (q.type === "select") { q.opts.forEach(o => { const b = document.createElement('button'); b.className = "word-chip"; b.innerText = o; b.onclick = function() { engInput.focus(); engInput.value = this.innerText; }; optDiv.appendChild(b); }); } else if (q.type === "input") { setTimeout(() => engInput.focus(), 100); } } }
+    function moveToAnswer(word, id) { const btn = document.getElementById(id); if (btn.classList.contains('selected')) return; btn.classList.add('selected'); btn.style.opacity = "0.3"; selectedWords.push({ word: word, id: id }); renderEnglishAnswer(); }
+    function moveBackToPool(index) { const item = selectedWords[index]; const btn = document.getElementById(item.id); if(btn) { btn.classList.remove('selected'); btn.style.opacity = "1"; } selectedWords.splice(index, 1); renderEnglishAnswer(); }
+    function renderEnglishAnswer() { const area = document.getElementById('user-input-area'); area.innerHTML = ""; selectedWords.forEach((item, index) => { const b = document.createElement('button'); b.className = "word-chip selected"; b.innerText = item.word; b.onclick = () => moveBackToPool(index); area.appendChild(b); }); }
 
-    function startTimer() {
-        timeLeft = 60; document.getElementById('timer-display').innerText = timeLeft;
-        if(timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            timeLeft--; document.getElementById('timer-display').innerText = timeLeft;
-            if(timeLeft <= 0) { clearInterval(timerInterval); handleAnswer(true); }
-        }, 1000);
-    }
-
-    function setupEnglish(q) {
-        const optDiv = document.getElementById('eng-options'); const mathArea = document.getElementById('user-input-area');
-        const engInput = document.getElementById('eng-text-input'); optDiv.innerHTML = ""; selectedWords = [];
-        if (q.type === "math") { mathArea.style.display = "flex"; engInput.style.display = "none"; return; }
-        if (q.type === "sort") {
-            mathArea.style.display = "flex"; engInput.style.display = "none";
-            q.words.forEach((word, index) => {
-                const b = document.createElement('button'); b.className = "word-chip"; b.innerText = word; b.id = `wp-${index}`;
-                b.onclick = () => moveToAnswer(word, b.id); optDiv.appendChild(b);
-            });
-        } else {
-            mathArea.style.display = "none"; engInput.style.display = "block"; engInput.readOnly = (q.type === "select");
-            if (q.type === "select") {
-                q.opts.forEach(o => {
-                    const b = document.createElement('button'); b.className = "word-chip"; b.innerText = o;
-                    b.onclick = function() { engInput.focus(); engInput.value = this.innerText; }; optDiv.appendChild(b);
-                });
-            } else if (q.type === "input") { setTimeout(() => engInput.focus(), 100); }
-        }
-    }
-
-    function moveToAnswer(word, id) {
-        const btn = document.getElementById(id); if (btn.classList.contains('selected')) return;
-        btn.classList.add('selected'); btn.style.opacity = "0.3";
-        selectedWords.push({ word: word, id: id }); renderEnglishAnswer();
-    }
-
-    function moveBackToPool(index) {
-        const item = selectedWords[index]; const btn = document.getElementById(item.id);
-        if(btn) { btn.classList.remove('selected'); btn.style.opacity = "1"; }
-        selectedWords.splice(index, 1); renderEnglishAnswer();
-    }
-
-    function renderEnglishAnswer() {
-        const area = document.getElementById('user-input-area'); area.innerHTML = "";
-        selectedWords.forEach((item, index) => {
-            const b = document.createElement('button'); b.className = "word-chip selected"; b.innerText = item.word;
-            b.onclick = () => moveBackToPool(index); area.appendChild(b);
-        });
-    }
-
+    /* --- ⑥ 判定・通信メイン --- */
     async function handleAnswer(isTimeout = false) {
         if(timerInterval) clearInterval(timerInterval);
         const q = questions[currentIdx]; const mathArea = document.getElementById('user-input-area');
@@ -289,24 +267,13 @@
 
         const clean = (str) => String(str).replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/[－―ー−‐]/g, "-").replace(/[＝]/g, "=").replace(/[π]/g, "pi").replace(/\s/g, "").toLowerCase();
         const isCorrect = !isTimeout && (clean(userAns) === clean(answers[currentIdx]));
-        
-        if(isCorrect) {
-            if(q.type === "math") mathScore += POINTS_PER_QUESTION; else engScore += POINTS_PER_QUESTION;
-        }
+        if(isCorrect) { if(q.type === "math") mathScore += POINTS_PER_QUESTION; else engScore += POINTS_PER_QUESTION; }
 
-        const overlay = document.getElementById('feedback-overlay'); const fText = document.getElementById('feedback-text');
-        const dNum = document.getElementById('avg-rate-display');
-        fText.innerText = isCorrect ? "正解！" : "不正解..."; fText.style.color = isCorrect ? "#2ed573" : "#ff4757";
-        overlay.style.display = "flex";
+        const overlay = document.getElementById('feedback-overlay'); const fText = document.getElementById('feedback-text'); const dNum = document.getElementById('avg-rate-display');
+        fText.innerText = isCorrect ? "正解！" : "不正解..."; fText.style.color = isCorrect ? "#2ed573" : "#ff4757"; overlay.style.display = "flex";
         
         let shuffleInterval = setInterval(() => { dNum.innerText = Math.floor(Math.random() * 100) + "%"; }, 50);
-
-        fetch(GAS_URL, { 
-            method: "POST", body: JSON.stringify({ 
-                name: userName, qNum: currentIdx + 1, userAns: userAns, timeSpent: 60 - timeLeft, isCorrect: isCorrect,
-                mathScore: mathScore, engScore: engScore, totalScore: mathScore + engScore
-            }) 
-        })
+        fetch(GAS_URL, { method: "POST", body: JSON.stringify({ name: userName, qNum: currentIdx + 1, userAns: userAns, timeSpent: 60 - timeLeft, isCorrect: isCorrect, mathScore: mathScore, engScore: engScore, totalScore: mathScore + engScore }) })
         .then(res => res.json()).then(result => {
             clearInterval(shuffleInterval); dNum.innerText = (result.avgRate || 0) + "%"; 
             if (currentIdx === 29 && result.mathSS !== undefined) {
@@ -315,17 +282,12 @@
                 document.getElementById('final-total-ss').innerText = result.totalSS;
             }
             document.getElementById('next-btn').style.display = "block";
-        }).catch(e => {
-            clearInterval(shuffleInterval); dNum.innerText = "--%"; document.getElementById('next-btn').style.display = "block";
-        });
+        }).catch(e => { clearInterval(shuffleInterval); dNum.innerText = "--%"; document.getElementById('next-btn').style.display = "block"; });
     }
 
-    function closeFeedback() { 
-        document.getElementById('feedback-overlay').style.display = "none"; 
-        document.getElementById('next-btn').style.display = "none"; 
-        currentIdx++; if(currentIdx < 30) loadQuestion(); else showResult(); 
-    }
+    function closeFeedback() { document.getElementById('feedback-overlay').style.display = "none"; document.getElementById('next-btn').style.display = "none"; currentIdx++; if(currentIdx < 30) loadQuestion(); else showResult(); }
     
+    /* --- ⑦ 結果表示ロジック --- */
     function showResult() { 
         document.getElementById('test-wrapper').style.display = 'none'; document.getElementById('result-screen').style.display = 'block'; 
         const total = mathScore + engScore;
@@ -333,39 +295,13 @@
         document.getElementById('res-total-score').innerText = total; document.getElementById('res-total-correct').innerText = total / 2;
         document.getElementById('res-math-score').innerText = mathScore; document.getElementById('res-math-correct').innerText = mathScore / 2;
         document.getElementById('res-eng-score').innerText = engScore; document.getElementById('res-eng-correct').innerText = engScore / 2;
-
-        const updateColors = () => {
-            const ids = [['final-total-ss', 'ss-total-box'], ['final-math-ss', 'ss-math-box'], ['final-eng-ss', 'ss-eng-box']];
-            ids.forEach(([id, boxId]) => {
-                const el = document.getElementById(id); const box = document.getElementById(boxId); const val = parseFloat(el.innerText);
-                if (!isNaN(val)) {
-                    box.classList.remove('ss-blue', 'ss-black', 'ss-red');
-                    if (val >= 60) box.classList.add('ss-blue'); else if (val <= 40) box.classList.add('ss-red'); else box.classList.add('ss-black');
-                }
-            });
-        };
+        const updateColors = () => { const ids = [['final-total-ss', 'ss-total-box'], ['final-math-ss', 'ss-math-box'], ['final-eng-ss', 'ss-eng-box']]; ids.forEach(([id, boxId]) => { const el = document.getElementById(id); const box = document.getElementById(boxId); const val = parseFloat(el.innerText); if (!isNaN(val)) { box.classList.remove('ss-blue', 'ss-black', 'ss-red'); if (val >= 60) box.classList.add('ss-blue'); else if (val <= 40) box.classList.add('ss-red'); else box.classList.add('ss-black'); } }); };
         let timer = setInterval(updateColors, 500); setTimeout(() => clearInterval(timer), 5000);
-
-        // 偏差値60以下なら申し込みボタンを表示
-        let offerCheckTimer = setInterval(() => {
-            const ssText = document.getElementById('final-total-ss').innerText;
-            if (ssText !== "--") {
-                if (parseFloat(ssText) <= 60) document.getElementById('course-offer').style.display = 'block';
-                clearInterval(offerCheckTimer);
-            }
-        }, 1000);
+        let offerCheckTimer = setInterval(() => { const ssText = document.getElementById('final-total-ss').innerText; if (ssText !== "--") { if (parseFloat(ssText) <= 60) document.getElementById('course-offer').style.display = 'block'; clearInterval(offerCheckTimer); } }, 1000);
     }
     
-    function getFormulaText(node) {
-        let t = ""; node.childNodes.forEach(c => {
-            if(c.nodeType === 3) t += c.textContent;
-            else if(c.classList && c.classList.contains('frac')) t += `(${getFormulaText(c.querySelector('.num'))})/(${getFormulaText(c.querySelector('.den'))})`;
-            else if(c.classList && c.classList.contains('root-wrap')) t += `√(${getFormulaText(c.querySelector('.root-content'))})`;
-            else if(c.tagName === 'SUP') t += `^2`; else t += getFormulaText(c);
-        });
-        return t;
-    }
-
+    /* --- ⑧ 数学補助ツール --- */
+    function getFormulaText(node) { let t = ""; node.childNodes.forEach(c => { if(c.nodeType === 3) t += c.textContent; else if(c.classList && c.classList.contains('frac')) t += `(${getFormulaText(c.querySelector('.num'))})/(${getFormulaText(c.querySelector('.den'))})`; else if(c.classList && c.classList.contains('root-wrap')) t += `√(${getFormulaText(c.querySelector('.root-content'))})`; else if(c.tagName === 'SUP') t += `^2`; else t += getFormulaText(c); }); return t; }
     function updateFocus(el) { document.querySelectorAll('.num, .den, .root-content').forEach(f => f.classList.remove('active-in')); lastActive = el; if(el) el.classList.add('active-in'); }
     document.getElementById('user-input-area').onclick = (e) => { const target = e.target.closest('.num, .den, .root-content'); if(target) updateFocus(target); };
     function add(v) { if(lastActive) lastActive.appendChild(document.createTextNode(v)); else document.getElementById('user-input-area').appendChild(document.createTextNode(v)); }
@@ -375,12 +311,7 @@
     function addFrac() { const f = document.createElement('span'); f.className = 'frac'; f.innerHTML = '<span class="num" contenteditable="true"></span><span class="den" contenteditable="true"></span>'; document.getElementById('user-input-area').appendChild(f); updateFocus(f.querySelector('.num')); }
     function moveNext() { if (lastActive && lastActive.classList.contains('num')) updateFocus(lastActive.closest('.frac').querySelector('.den')); else updateFocus(null); }
     function backspace() { if(lastActive) { if(lastActive.childNodes.length > 0) lastActive.removeChild(lastActive.lastChild); else { const pb = lastActive.closest('.root-wrap, .frac'); if(pb) { updateFocus(null); document.getElementById('user-input-area').removeChild(pb); } } } else if(document.getElementById('user-input-area').lastChild) document.getElementById('user-input-area').removeChild(document.getElementById('user-input-area').lastChild); }
-    function clearAll() { 
-        const mathArea = document.getElementById('user-input-area'); const engInput = document.getElementById('eng-text-input');
-        mathArea.innerHTML = ""; mathArea.style.display = "flex"; engInput.style.display = "none"; engInput.value = "";
-        document.querySelectorAll('.word-chip').forEach(btn => { btn.classList.remove('selected'); btn.style.opacity = "1"; });
-        selectedWords = []; lastActive = null; 
-    }
+    function clearAll() { const mathArea = document.getElementById('user-input-area'); const engInput = document.getElementById('eng-text-input'); mathArea.innerHTML = ""; mathArea.style.display = "flex"; engInput.style.display = "none"; engInput.value = ""; document.querySelectorAll('.word-chip').forEach(btn => { btn.classList.remove('selected'); btn.style.opacity = "1"; }); selectedWords = []; lastActive = null; }
 </script>
 </body>
 </html>

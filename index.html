@@ -10,9 +10,9 @@
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #eef2f7; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
         .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; padding: 10px; box-sizing: border-box; }
         
-        /* --- スタート画面 --- */
+        /* --- 豪華なスタート画面 --- */
         #name-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .name-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; border: 5px solid #fff; box-sizing: border-box; }
+        .name-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; display: flex; flex-direction: column; align-items: center; border: 5px solid #fff; box-sizing: border-box; }
         .title-main { font-size: 26px; font-weight: bold; color: #2d3436; margin-bottom: 5px; animation: float 3s ease-in-out infinite; }
         .title-sub { font-size: 16px; color: #636e72; margin-bottom: 25px; background: #fff; padding: 5px 15px; border-radius: 20px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -21,7 +21,7 @@
         .start-btn { width: 100%; background: #ff7675; color: white; font-size: 24px; font-weight: bold; padding: 20px; border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(255,118,117,0.4); animation: pulse 2s infinite; transition: 0.3s; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 
-        /* --- 判定タイル画面（全画面オーバーレイ） --- */
+        /* --- 判定専用タイル（全画面） --- */
         #feedback-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
         .digital-num { font-family: 'Consolas', monospace; font-size: 80px; font-weight: bold; color: #2f3542; letter-spacing: -2px; }
         .bg-correct { background: #f0fff4 !important; }
@@ -73,6 +73,7 @@
         .eng-card { background: #ffa502; }
         .res-label { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
         .res-score { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+        .res-sub { font-size: 14px; opacity: 0.95; margin-bottom: 10px; }
         .ss-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; background: white; font-weight: bold; font-size: 20px; }
         .ss-blue { color: #0984e3 !important; }
         .ss-black { color: #2d3436 !important; }
@@ -81,7 +82,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         #apply-btn { display: inline-block; background: #ff4757; color: white !important; padding: 15px 40px; border-radius: 35px; text-decoration: none; font-weight: bold; font-size: 20px; }
 
-        /* --- スマホ最適化 --- */
+        /* --- スマホ専用レスポンシブ --- */
         @media (max-width: 768px) {
             body { padding: 0; }
             .container { padding: 8px; gap: 8px; max-width: 100%; }
@@ -191,10 +192,10 @@
     const POINTS_PER_QUESTION = 2;
     let currentIdx = 0, userName = "", timeLeft = 60, mathScore = 0, engScore = 0, timerInterval = null, lastActive = null, selectedWords = [];
 
-    /* --- ② データ（正解） --- */
+    /* --- ② データ（正解リスト） --- */
     const answers = ["-3", "12", "4x-2", "-4", "x=5", "x=7", "5個", "15分", "1700円", "a=4", "y=3", "36pi", "8pi", "S=pix^2", "V=5pix^2", "am", "are", "iplaytenniseveryday", "eats", "him", "canyouplaythepiano?", "must", "can", "doesn't", "didyoueatbreakfast?", "where", "whatisthis?", "because", "on", "igetupatseven"];
 
-    /* --- ③ データ（問題リスト：1問1行で整列） --- */
+    /* --- ③ データ（問題リスト：1問1行 縦並び整理） --- */
     const questions = [
         { q: "-8 - (-5) を計算せよ。", type: "math" },
         { q: "(-2)² × 3 を計算せよ。", type: "math" },
@@ -228,7 +229,7 @@
         { q: "[ I / at / up / get / seven ] を並び替え。", type: "sort", words: ["I", "get", "up", "at", "seven"] }
     ];
 
-    /* --- ④ 進行制御 --- */
+    /* --- ④ 初期化・進行管理 --- */
     function startTest() { userName = document.getElementById('user-name').value.trim(); if(!userName) return alert("名前を入力してね！"); document.getElementById('name-screen').style.display = "none"; document.getElementById('test-wrapper').style.display = "flex"; loadQuestion(); }
     function loadQuestion() { const q = questions[currentIdx]; const isMath = (q.type === "math"); document.getElementById('q-number').innerText = `問題 ${currentIdx + 1} / 30`; document.getElementById('q-text').innerText = q.q; document.getElementById('math-grid').style.display = isMath ? "grid" : "none"; document.getElementById('eng-grid').style.display = isMath ? "none" : "grid"; document.getElementById('ans-prefix').innerText = q.ansPrefix || ""; clearAll(); setupEnglish(q); startTimer(); }
     function startTimer() { timeLeft = 60; document.getElementById('timer-display').innerText = timeLeft; if(timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { timeLeft--; document.getElementById('timer-display').innerText = timeLeft; if(timeLeft <= 0) { clearInterval(timerInterval); handleAnswer(true); } }, 1000); }
@@ -237,7 +238,7 @@
     function moveBackToPool(index) { const item = selectedWords[index]; const btn = document.getElementById(item.id); if(btn) { btn.classList.remove('selected'); btn.style.opacity = "1"; } selectedWords.splice(index, 1); renderEnglishAnswer(); }
     function renderEnglishAnswer() { const area = document.getElementById('user-input-area'); area.innerHTML = ""; selectedWords.forEach((item, index) => { const b = document.createElement('button'); b.className = "word-chip selected"; b.innerText = item.word; b.onclick = () => moveBackToPool(index); area.appendChild(b); }); }
 
-    /* --- ⑤ 判定・通信 --- */
+    /* --- ⑤ 判定・通信（非同期） --- */
     async function handleAnswer(isTimeout = false) {
         if(timerInterval) clearInterval(timerInterval);
         const q = questions[currentIdx]; const mathArea = document.getElementById('user-input-area'); const engInput = document.getElementById('eng-text-input');
@@ -272,7 +273,7 @@
         let offerCheckTimer = setInterval(() => { const ssText = document.getElementById('final-total-ss').innerText; if (ssText !== "--") { if (parseFloat(ssText) <= 60) document.getElementById('course-offer').style.display = 'block'; clearInterval(offerCheckTimer); } }, 1000);
     }
 
-    /* --- ⑥ 補助ツール --- */
+    /* --- ⑥ 補助ツール・リセット --- */
     function getFormulaText(node) { let t = ""; node.childNodes.forEach(c => { if(c.nodeType === 3) t += c.textContent; else if(c.classList && c.classList.contains('frac')) t += `(${getFormulaText(c.querySelector('.num'))})/(${getFormulaText(c.querySelector('.den'))})`; else if(c.classList && c.classList.contains('root-wrap')) t += `√(${getFormulaText(c.querySelector('.root-content'))})`; else if(c.tagName === 'SUP') t += `^2`; else t += getFormulaText(c); }); return t; }
     function updateFocus(el) { document.querySelectorAll('.num, .den, .root-content').forEach(f => f.classList.remove('active-in')); lastActive = el; if(el) el.classList.add('active-in'); }
     document.getElementById('user-input-area').onclick = (e) => { const target = e.target.closest('.num, .den, .root-content'); if(target) updateFocus(target); };
@@ -283,9 +284,18 @@
     function addFrac() { const f = document.createElement('span'); f.className = 'frac'; f.innerHTML = '<span class="num" contenteditable="true"></span><span class="den" contenteditable="true"></span>'; document.getElementById('user-input-area').appendChild(f); updateFocus(f.querySelector('.num')); }
     function moveNext() { if (lastActive && lastActive.classList.contains('num')) updateFocus(lastActive.closest('.frac').querySelector('.den')); else updateFocus(null); }
     function backspace() { if(lastActive) { if(lastActive.childNodes.length > 0) lastActive.removeChild(lastActive.lastChild); else { const pb = lastActive.closest('.root-wrap, .frac'); if(pb) { updateFocus(null); document.getElementById('user-input-area').removeChild(pb); } } } else if(document.getElementById('user-input-area').lastChild) document.getElementById('user-input-area').removeChild(document.getElementById('user-input-area').lastChild); }
-    function clearAll() { const mathArea = document.getElementById('user-input-area'); const engInput = document.getElementById('eng-text-input'); mathArea.innerHTML = ""; mathArea.style.display = "flex"; engInput.style.display = "none"; engInput.value = ""; document.querySelectorAll('.word-chip').forEach(btn => { btn.classList.remove('selected'); btn.style.opacity = "1"; }); selectedWords = []; lastActive = null; }
 
-    /* --- ⑦ ダブルタップズーム防止 --- */
+    function clearAll() { 
+        const mathArea = document.getElementById('user-input-area'); 
+        const engInput = document.getElementById('eng-text-input'); 
+        mathArea.innerHTML = ""; engInput.value = ""; 
+        document.querySelectorAll('.word-chip').forEach(btn => { btn.classList.remove('selected'); btn.style.opacity = "1"; }); 
+        selectedWords = []; lastActive = null; 
+        const q = questions[currentIdx];
+        if (q.type === "math" || q.type === "sort") { mathArea.style.display = "flex"; engInput.style.display = "none"; }
+        else { mathArea.style.display = "none"; engInput.style.display = "block"; }
+    }
+
     (function() {
         let lastTouchTime = 0;
         document.addEventListener('touchend', function (e) {

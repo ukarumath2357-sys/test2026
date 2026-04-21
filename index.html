@@ -10,29 +10,36 @@
         body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #eef2f7; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; -webkit-text-size-adjust: 100%; }
         .container { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 15px; padding: 10px; box-sizing: border-box; }
         
-        /* --- 豪華なスタート画面 --- */
-        #name-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%); z-index: 200; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .name-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; border: 5px solid #fff; }
+        /* --- スタート画面 --- */
+        #name-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .name-box { background: rgba(255, 255, 255, 0.95); padding: 40px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; border: 5px solid #fff; box-sizing: border-box; }
         .title-main { font-size: 26px; font-weight: bold; color: #2d3436; margin-bottom: 5px; animation: float 3s ease-in-out infinite; }
         .title-sub { font-size: 16px; color: #636e72; margin-bottom: 25px; background: #fff; padding: 5px 15px; border-radius: 20px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .name-input { width: 100%; padding: 18px; font-size: 20px; border: 3px solid #eee; border-radius: 15px; margin-bottom: 25px; outline: none; box-sizing: border-box; transition: 0.3s; text-align: center; }
+        .name-input { width: 100%; padding: 18px; font-size: 20px; border: 3px solid #eee; border-radius: 15px; margin-bottom: 25px; outline: none; transition: 0.3s; text-align: center; box-sizing: border-box; }
         .name-input:focus { border-color: #2ed573; background: #fafff1; }
         .start-btn { width: 100%; background: #ff7675; color: white; font-size: 24px; font-weight: bold; padding: 20px; border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 8px 20px rgba(255,118,117,0.4); animation: pulse 2s infinite; transition: 0.3s; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 
-        /* --- 問題・回答エリア --- */
-        .question-container { background: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 10px solid #2ed573; position: relative; min-height: 120px; }
-        #timer-display { position: absolute; top: 20px; right: 30px; font-size: 32px; font-weight: bold; color: #ff4757; background: #fff5f5; padding: 10px 20px; border-radius: 10px; border: 2px solid #ff4757; }
-        #q-text { font-size: 28px; font-weight: bold; line-height: 1.6; margin: 0; width: 100%; }
-        #q-number { color: #888; font-size: 16px; margin-bottom: 8px; }
+        /* --- 判定タイル画面（全画面オーバーレイ） --- */
+        #feedback-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; }
+        .digital-num { font-family: 'Consolas', monospace; font-size: 80px; font-weight: bold; color: #2f3542; letter-spacing: -2px; }
+        .bg-correct { background: #f0fff4 !important; }
+        .bg-incorrect { background: #fff5f5 !important; }
+
+        /* --- 問題表示エリア（タイマー分離型） --- */
+        .question-container { background: #fff; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 10px solid #2ed573; display: flex; flex-direction: column; gap: 10px; }
+        .q-header { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        #q-number { color: #888; font-size: 16px; font-weight: bold; }
+        #timer-display { font-size: 24px; font-weight: bold; color: #ff4757; background: #fff5f5; padding: 8px 16px; border-radius: 10px; border: 2px solid #ff4757; min-width: 45px; text-align: center; }
+        #q-text { font-size: 26px; font-weight: bold; line-height: 1.5; margin: 0; color: #2d3436; word-break: break-all; }
+
+        /* --- 回答操作エリア --- */
         .panel { background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; box-sizing: border-box; }
         .answer-area { width: 100%; min-height: 100px; padding: 15px; margin-bottom: 15px; border: 2px solid #dfe4ea; border-radius: 12px; background: #fcfcfc; display: flex; align-items: center; flex-wrap: wrap; box-sizing: border-box; font-size: 40px; }
-
-        /* --- 【復旧！】英語入力欄CSS --- */
         #eng-text-input { width: 100%; border: 3px solid #2ed573; border-radius: 12px; font-size: 32px; padding: 15px; box-sizing: border-box; background: white; outline: none; display: none; }
 
-        /* --- 数学記号CSS --- */
+        /* --- 数学記号 --- */
         .math-var { font-family: 'Times New Roman', serif; font-style: italic; }
         .frac { display: inline-flex; flex-direction: column; vertical-align: middle; align-items: center; margin: 0 5px; font-size: 0.85em; }
         .frac .num { border-bottom: 2px solid #333; width: 100%; text-align: center; outline: none; min-width: 30px; min-height: 35px; }
@@ -66,26 +73,22 @@
         .eng-card { background: #ffa502; }
         .res-label { font-size: 14px; opacity: 0.9; margin-bottom: 5px; }
         .res-score { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
-        .res-sub { font-size: 14px; opacity: 0.95; margin-bottom: 10px; }
         .ss-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; background: white; font-weight: bold; font-size: 20px; }
         .ss-blue { color: #0984e3 !important; }
         .ss-black { color: #2d3436 !important; }
         .ss-red { color: #d63031 !important; }
         #course-offer { margin-top: 30px; padding: 25px; border: 2px dashed #ff4757; border-radius: 15px; background-color: #fffafb; animation: fadeIn 0.8s ease-out; display: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #apply-btn { display: inline-block; background: #ff4757; color: white !important; padding: 15px 40px; border-radius: 35px; text-decoration: none; font-weight: bold; font-size: 20px; transition: 0.3s; }
+        #apply-btn { display: inline-block; background: #ff4757; color: white !important; padding: 15px 40px; border-radius: 35px; text-decoration: none; font-weight: bold; font-size: 20px; }
 
-        /* --- スマホ専用レスポンシブ --- */
+        /* --- スマホ最適化 --- */
         @media (max-width: 768px) {
             body { padding: 0; }
             .container { padding: 8px; gap: 8px; max-width: 100%; }
             .name-box { width: 92%; padding: 30px 20px; }
             .title-main { font-size: 22px; }
-            .question-container { padding: 15px; min-height: auto; }
-            #q-text { font-size: 22px; width: 100%; margin-top: 35px; }
-            #timer-display { top: 10px; right: 10px; font-size: 20px; padding: 4px 10px; }
+            #q-text { font-size: 20px; }
             .answer-area { min-height: 80px; font-size: 32px; padding: 8px; }
-            #eng-text-input { font-size: 24px; padding: 12px; }
             .btn { font-size: 20px; min-height: 55px; }
             .subject-container { flex-direction: column; gap: 10px; }
             #apply-btn { width: 100%; box-sizing: border-box; }
@@ -108,13 +111,15 @@
     <div id="feedback-text" style="font-size: 70px; font-weight: bold; margin-bottom: 10px;"></div>
     <div style="font-size: 20px; color: #888; margin-bottom: 10px;">全国の正解率は...</div>
     <div id="avg-rate-display" class="digital-num">0%</div>
-    <button id="next-btn" class="btn submit" style="width: 280px; display:none; margin-top:30px;" onclick="closeFeedback()">次の問題へ進む</button>
+    <button id="next-btn" class="start-btn" style="width: 280px; display:none; margin-top:30px; background:#2f3542;" onclick="closeFeedback()">次の問題へ進む</button>
 </div>
 
 <div id="test-wrapper" class="container" style="display:none;">
     <div class="question-container">
-        <div id="q-number"></div>
-        <div id="timer-display">60</div>
+        <div class="q-header">
+            <div id="q-number"></div>
+            <div id="timer-display">60</div>
+        </div>
         <p id="q-text"></p>
     </div>
 
@@ -189,7 +194,7 @@
     /* --- ② データ（正解） --- */
     const answers = ["-3", "12", "4x-2", "-4", "x=5", "x=7", "5個", "15分", "1700円", "a=4", "y=3", "36pi", "8pi", "S=pix^2", "V=5pix^2", "am", "are", "iplaytenniseveryday", "eats", "him", "canyouplaythepiano?", "must", "can", "doesn't", "didyoueatbreakfast?", "where", "whatisthis?", "because", "on", "igetupatseven"];
 
-    /* --- ③ データ（問題：整列済み） --- */
+    /* --- ③ データ（問題リスト：1問1行で整列） --- */
     const questions = [
         { q: "-8 - (-5) を計算せよ。", type: "math" },
         { q: "(-2)² × 3 を計算せよ。", type: "math" },
@@ -240,8 +245,13 @@
         const clean = (str) => String(str).replace(/[！-～]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)).replace(/[－―ー−‐]/g, "-").replace(/[＝]/g, "=").replace(/[π]/g, "pi").replace(/\s/g, "").toLowerCase();
         const isCorrect = !isTimeout && (clean(userAns) === clean(answers[currentIdx]));
         if(isCorrect) { if(q.type === "math") mathScore += POINTS_PER_QUESTION; else engScore += POINTS_PER_QUESTION; }
+
         const overlay = document.getElementById('feedback-overlay'); const fText = document.getElementById('feedback-text'); const dNum = document.getElementById('avg-rate-display');
-        fText.innerText = isCorrect ? "正解！" : "不正解..."; fText.style.color = isCorrect ? "#2ed573" : "#ff4757"; overlay.style.display = "flex";
+        overlay.classList.remove('bg-correct', 'bg-incorrect');
+        overlay.classList.add(isCorrect ? 'bg-correct' : 'bg-incorrect');
+        fText.innerText = isCorrect ? "正解！ ✨" : "不正解... 💧"; 
+        fText.style.color = isCorrect ? "#2ed573" : "#ff4757"; overlay.style.display = "flex";
+        
         let shuffleInterval = setInterval(() => { dNum.innerText = Math.floor(Math.random() * 100) + "%"; }, 50);
         fetch(GAS_URL, { method: "POST", body: JSON.stringify({ name: userName, qNum: currentIdx + 1, userAns: userAns, timeSpent: 60 - timeLeft, isCorrect: isCorrect, mathScore: mathScore, engScore: engScore, totalScore: mathScore + engScore }) })
         .then(res => res.json()).then(result => {
@@ -251,25 +261,18 @@
         }).catch(e => { clearInterval(shuffleInterval); dNum.innerText = "--%"; document.getElementById('next-btn').style.display = "block"; });
     }
     function closeFeedback() { document.getElementById('feedback-overlay').style.display = "none"; document.getElementById('next-btn').style.display = "none"; currentIdx++; if(currentIdx < 30) loadQuestion(); else showResult(); }
-    
-    /* --- ⑥ 結果画面：正解数も集計・表示 --- */
     function showResult() { 
         document.getElementById('test-wrapper').style.display = 'none'; document.getElementById('result-screen').style.display = 'block'; 
-        const total = mathScore + engScore; 
-        document.getElementById('final-name').innerText = userName + " さんの診断結果"; 
-        document.getElementById('res-total-score').innerText = total; 
-        document.getElementById('res-total-correct').innerText = total / 2;
-        document.getElementById('res-math-score').innerText = mathScore; 
-        document.getElementById('res-math-correct').innerText = mathScore / 2; // 数学正解数
-        document.getElementById('res-eng-score').innerText = engScore; 
-        document.getElementById('res-eng-correct').innerText = engScore / 2; // 英語正解数
-        
+        const total = mathScore + engScore; document.getElementById('final-name').innerText = userName + " さんの診断結果"; 
+        document.getElementById('res-total-score').innerText = total; document.getElementById('res-total-correct').innerText = total / 2;
+        document.getElementById('res-math-score').innerText = mathScore; document.getElementById('res-math-correct').innerText = mathScore / 2;
+        document.getElementById('res-eng-score').innerText = engScore; document.getElementById('res-eng-correct').innerText = engScore / 2;
         const updateColors = () => { const ids = [['final-total-ss', 'ss-total-box'], ['final-math-ss', 'ss-math-box'], ['final-eng-ss', 'ss-eng-box']]; ids.forEach(([id, boxId]) => { const el = document.getElementById(id); const box = document.getElementById(boxId); const val = parseFloat(el.innerText); if (!isNaN(val)) { box.classList.remove('ss-blue', 'ss-black', 'ss-red'); if (val >= 60) box.classList.add('ss-blue'); else if (val <= 40) box.classList.add('ss-red'); else box.classList.add('ss-black'); } }); };
         let timer = setInterval(updateColors, 500); setTimeout(() => clearInterval(timer), 5000);
         let offerCheckTimer = setInterval(() => { const ssText = document.getElementById('final-total-ss').innerText; if (ssText !== "--") { if (parseFloat(ssText) <= 60) document.getElementById('course-offer').style.display = 'block'; clearInterval(offerCheckTimer); } }, 1000);
     }
 
-    /* --- ⑦ 補助ツール --- */
+    /* --- ⑥ 補助ツール --- */
     function getFormulaText(node) { let t = ""; node.childNodes.forEach(c => { if(c.nodeType === 3) t += c.textContent; else if(c.classList && c.classList.contains('frac')) t += `(${getFormulaText(c.querySelector('.num'))})/(${getFormulaText(c.querySelector('.den'))})`; else if(c.classList && c.classList.contains('root-wrap')) t += `√(${getFormulaText(c.querySelector('.root-content'))})`; else if(c.tagName === 'SUP') t += `^2`; else t += getFormulaText(c); }); return t; }
     function updateFocus(el) { document.querySelectorAll('.num, .den, .root-content').forEach(f => f.classList.remove('active-in')); lastActive = el; if(el) el.classList.add('active-in'); }
     document.getElementById('user-input-area').onclick = (e) => { const target = e.target.closest('.num, .den, .root-content'); if(target) updateFocus(target); };
@@ -282,7 +285,7 @@
     function backspace() { if(lastActive) { if(lastActive.childNodes.length > 0) lastActive.removeChild(lastActive.lastChild); else { const pb = lastActive.closest('.root-wrap, .frac'); if(pb) { updateFocus(null); document.getElementById('user-input-area').removeChild(pb); } } } else if(document.getElementById('user-input-area').lastChild) document.getElementById('user-input-area').removeChild(document.getElementById('user-input-area').lastChild); }
     function clearAll() { const mathArea = document.getElementById('user-input-area'); const engInput = document.getElementById('eng-text-input'); mathArea.innerHTML = ""; mathArea.style.display = "flex"; engInput.style.display = "none"; engInput.value = ""; document.querySelectorAll('.word-chip').forEach(btn => { btn.classList.remove('selected'); btn.style.opacity = "1"; }); selectedWords = []; lastActive = null; }
 
-    /* --- ⑧ ダブルタップズーム防止 --- */
+    /* --- ⑦ ダブルタップズーム防止 --- */
     (function() {
         let lastTouchTime = 0;
         document.addEventListener('touchend', function (e) {

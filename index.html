@@ -131,7 +131,7 @@
         <div id="math-ans-area" class="answer-area">
             <span id="ans-prefix" style="font-size: 32px; font-weight: bold; margin-right:10px;"></span>
             <div id="user-input-area" style="display: flex; align-items: center; flex-wrap: wrap; min-width: 50px; min-height: 50px;"></div>
-            <input type="text" id="eng-text-input" placeholder="解答を入力">
+           <input type="text" id="eng-text-input" placeholder="解答を入力" maxlength="15">
         </div>
 
         <div id="math-grid" class="grid">
@@ -354,6 +354,108 @@
             lastTouchTime = now;
         }, { passive: false });
     })();
+
+/* --- 定数と制限チェック (数学専用) --- */
+const MAX_INPUT_LENGTH = 15;
+function isInputLimitReached() {
+    const mathArea = document.getElementById('user-input-area');
+    // 数式のテキスト部分（タグを除いた中身）が15文字以上なら制限
+    return getFormulaText(mathArea).length >= MAX_INPUT_LENGTH;
+}
+
+/* --- 数学入力関数 (15文字制限を適用) --- */
+function add(v) { 
+    if(isInputLimitReached()) return;
+    if(lastActive) lastActive.appendChild(document.createTextNode(v)); 
+    else document.getElementById('user-input-area').appendChild(document.createTextNode(v)); 
+}
+
+function addVar(v) { 
+    if(isInputLimitReached()) return;
+    const s = document.createElement('span'); 
+    s.className = "math-var"; s.innerText = v; 
+    if(lastActive) lastActive.appendChild(s); 
+    else document.getElementById('user-input-area').appendChild(s); 
+}
+
+function addPower() { 
+    if(isInputLimitReached()) return;
+    const s = document.createElement('sup'); 
+    s.innerText = '2'; 
+    if(lastActive) lastActive.appendChild(s); 
+    else document.getElementById('user-input-area').appendChild(s); 
+}
+
+function addRoot() { 
+    if(isInputLimitReached()) return;
+    const w = document.createElement('span'); 
+    w.className = 'root-wrap'; 
+    w.innerHTML = '<span class="root-symbol">√</span><span class="root-content" contenteditable="true"></span>'; 
+    document.getElementById('user-input-area').appendChild(w); 
+    updateFocus(w.querySelector('.root-content')); 
+}
+
+function addFrac() { 
+    if(isInputLimitReached()) return;
+    const f = document.createElement('span'); 
+    f.className = 'frac'; 
+    f.innerHTML = '<span class="num" contenteditable="true"></span><span class="den" contenteditable="true"></span>'; 
+    document.getElementById('user-input-area').appendChild(f); 
+    updateFocus(f.querySelector('.num')); 
+}
+
+/* --- 英語並び替え関数 (並び替えのみ制限なし) --- */
+function moveToAnswer(word, id) { 
+    const btn = document.getElementById(id); 
+    if (btn.classList.contains('selected')) return; 
+
+    // 並び替えは正解文が15文字を超えるケースがあるため、制限はかけない
+    btn.classList.add('selected'); 
+    btn.style.opacity = "0.3"; 
+    selectedWords.push({ word: word, id: id }); 
+    renderEnglishAnswer(); 
+}
+
+/* --- リセット関数 (完全物理消去 + iPhoneゴースト対策) --- */
+function clearAll() { 
+    const mathArea = document.getElementById('user-input-area'); 
+    const engInput = document.getElementById('eng-text-input'); 
+
+    // 1. 物理的な中身の完全削除
+    if (mathArea.replaceChildren) {
+        mathArea.replaceChildren();
+    } else {
+        mathArea.innerHTML = "";
+    }
+    engInput.value = ""; 
+    
+    // 2. 状態リセット
+    document.querySelectorAll('.word-chip').forEach(btn => { 
+        btn.classList.remove('selected'); 
+        btn.style.opacity = "1"; 
+    }); 
+    selectedWords = []; 
+    lastActive = null; 
+    updateFocus(null);
+
+    // 3. iPhone用：表示の強制再描画（ゴースト対策）
+    const originalDisplay = mathArea.style.display || "flex";
+    mathArea.style.display = 'none';
+    mathArea.offsetHeight; // リフロー（再計算）を強制
+    mathArea.style.display = originalDisplay;
+
+    // 4. 問題タイプに応じた表示切り替え
+    const q = questions[currentIdx];
+    if (q.type === "math" || q.type === "sort") { 
+        mathArea.style.display = "flex"; 
+        engInput.style.display = "none"; 
+    } else { 
+        mathArea.style.display = "none"; 
+        engInput.style.display = "block"; 
+        engInput.readOnly = (q.type === "select");
+        if (q.type === "input") { setTimeout(() => engInput.focus(), 50); }
+    }
+}
 </script>
 </body>
 </html>

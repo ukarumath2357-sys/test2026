@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>漢文の要点まとめ｜返り点・置き字・再読文字</title>
+<style>
+:root{
+  --bg:#fdfaf3;
+  --card:#ffffff;
+  --ink:#33384a;
+  --muted:#6f7280;
+  --line:#e8dfd2;
+  --accent:#b46b66;
+  --accent2:#5d6275;
+  --soft:#f5eee5;
+  --chip:#fff8e8;
+  --ok:#4f8068;
+  --ng:#b45d61;
+  --shadow:0 6px 18px rgba(70,55,40,.08);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Helvetica Neue",Arial,"Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+  line-height:1.75;
+}
+.container{
+  max-width:760px;
+  margin:0 auto;
+  padding:18px;
+}
+header{
+  text-align:center;
+  padding:22px 0 12px;
+}
+h1{
+  font-size:1.55rem;
+  margin:0 0 8px;
+  color:var(--accent2);
+}
+.lead{
+  color:var(--muted);
+  font-size:.95rem;
+  margin:0;
+}
+.card{
+  background:var(--card);
+  border-radius:16px;
+  padding:20px;
+  margin:18px 0;
+  box-shadow:var(--shadow);
+}
+h2{
+  font-size:1.15rem;
+  margin:0 0 14px;
+  border-left:5px solid var(--accent);
+  padding-left:10px;
+  color:var(--accent2);
+}
+h3{
+  font-size:1.02rem;
+  margin:18px 0 8px;
+  color:var(--accent2);
+}
+.note{
+  background:var(--soft);
+  border-radius:12px;
+  padding:12px 14px;
+  font-size:.94rem;
+}
+.point-list{
+  padding-left:1.2em;
+  margin:10px 0;
+}
+.point-list li{margin:.35em 0}
+.table-wrap{overflow-x:auto}
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:560px;
+  font-size:.86rem;
+}
+th,td{
+  border:1px solid var(--line);
+  padding:9px;
+  vertical-align:top;
+}
+th{
+  background:#fbf6ee;
+  color:var(--accent2);
+  white-space:nowrap;
+}
+.koko{
+  background:#fff8df;
+  border:1px solid #f0dfad;
+  border-radius:14px;
+  padding:14px;
+}
+.badge{
+  display:inline-block;
+  padding:.15em .55em;
+  border-radius:100px;
+  background:var(--soft);
+  color:var(--accent2);
+  font-size:.82rem;
+  font-weight:700;
+}
+
+/* 要点内ミニ縦書き */
+.mini-kanbun{
+  display:inline-flex;
+  writing-mode:vertical-rl;
+  text-orientation:upright;
+  align-items:flex-start;
+  justify-content:flex-start;
+  font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;
+  font-size:1.35rem;
+  vertical-align:middle;
+  margin:0 .35em;
+  padding:.15em .1em;
+}
+.mini-unit{
+  position:relative;
+  display:inline-flex;
+  justify-content:center;
+  align-items:center;
+  width:1.2rem;
+  min-height:1.55rem;
+  margin:.03em 0;
+}
+.mini-mark{
+  position:absolute;
+  left:-.48em;
+  bottom:.05em;
+  color:#b23131;
+  font-size:.62rem;
+  font-weight:700;
+  line-height:1;
+}
+.mini-mark.re{font-size:.58rem}
+
+/* 問題の縦書き */
+.kanbun-box{
+  margin:18px auto;
+  padding:26px 14px;
+  background:#fff;
+  border:1.5px solid var(--line);
+  border-radius:14px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.kanbun-vertical{
+  writing-mode:vertical-rl;
+  text-orientation:upright;
+  font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;
+  min-height:245px;
+  display:inline-flex;
+  flex-direction:column;
+  gap:.18em;
+  align-items:center;
+  justify-content:flex-start;
+  padding:12px 42px;
+}
+.k-unit{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:2.55rem;
+  min-height:2.95rem;
+  margin:.05em 0;
+}
+.k-char{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:2.25rem;
+  height:2.45rem;
+  font-size:2.15rem;
+  line-height:1;
+}
+.k-unit.okiji .k-char{color:#8e8e8e}
+.k-mark{
+  position:absolute;
+  left:-.42em;
+  bottom:.05em;
+  font-size:.78rem;
+  line-height:1;
+  font-weight:700;
+  color:#b23131;
+  z-index:2;
+}
+.k-mark.re{
+  font-size:.72rem;
+  left:-.40em;
+  bottom:.08em;
+}
+.k-mark.small2{bottom:.92em}
+.k-mark.small3{bottom:1.76em}
+.k-mark.tall{font-size:.74rem}
+
+/* 漢字横の丸 */
+.drop-slot{
+  position:absolute;
+  right:-1.2rem;
+  top:50%;
+  transform:translateY(-50%);
+  writing-mode:horizontal-tb;
+  text-orientation:mixed;
+  width:1.7rem;
+  height:1.7rem;
+  border:2px dashed #d6c8b7;
+  border-radius:50%;
+  background:#fffdf8;
+  color:var(--accent2);
+  font-family:"Helvetica Neue",Arial,sans-serif;
+  font-size:.9rem;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  user-select:none;
+}
+.drop-slot.filled{
+  border-style:solid;
+  background:#fff3da;
+  border-color:#d2a45f;
+}
+.drop-slot:hover{
+  background:#fff1c9;
+}
+
+/* 数字カード */
+.chip-area{
+  margin:16px 0 4px;
+  padding:12px;
+  border-radius:14px;
+  background:#fbf6ee;
+}
+.chip-title{
+  color:var(--muted);
+  font-size:.88rem;
+  margin-bottom:8px;
+  text-align:center;
+}
+.chip-bank{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  justify-content:center;
+}
+.chip{
+  min-width:42px;
+  height:42px;
+  border-radius:999px;
+  border:2px solid #d8c9b6;
+  background:var(--chip);
+  color:var(--accent2);
+  font-size:1.05rem;
+  font-weight:800;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  user-select:none;
+}
+.chip.selected{
+  background:#ffe1d9;
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(180,107,102,.18);
+}
+.chip.used{
+  opacity:.35;
+}
+.helper{
+  color:var(--muted);
+  font-size:.86rem;
+  text-align:center;
+  margin-top:8px;
+}
+.btn{
+  width:100%;
+  display:block;
+  border:0;
+  border-radius:12px;
+  padding:14px 16px;
+  margin-top:14px;
+  background:var(--accent2);
+  color:#fff;
+  font-size:1rem;
+  font-weight:700;
+  cursor:pointer;
+}
+.btn:disabled{opacity:.55;cursor:default}
+.option-btn{
+  width:100%;
+  background:#fff;
+  color:var(--ink);
+  border:2px solid #ece6dd;
+  border-radius:12px;
+  padding:12px 14px;
+  text-align:left;
+  margin:8px 0;
+  font-size:.98rem;
+  cursor:pointer;
+}
+.option-btn:hover{
+  border-color:var(--accent);
+  background:#fffafa;
+}
+.hidden{display:none!important}
+#progress-bar{
+  height:7px;
+  background:#eee5d8;
+  border-radius:100px;
+  overflow:hidden;
+  margin:4px 0 12px;
+}
+#progress-inner{
+  height:100%;
+  width:0%;
+  background:var(--accent);
+  transition:.25s;
+}
+.qnum{
+  color:var(--muted);
+  font-size:.85rem;
+  margin-bottom:10px;
+}
+.feedback{
+  display:none;
+  margin-top:14px;
+  border-radius:14px;
+  padding:14px;
+}
+.feedback.correct{
+  display:block;
+  color:#245941;
+  background:#e9f5ee;
+  border:1px solid #c9e0d2;
+}
+.feedback.wrong{
+  display:block;
+  color:#843d42;
+  background:#fff0f1;
+  border:1px solid #f0c9cc;
+}
+.answer-line{
+  margin:.5em 0;
+  padding:.5em 0;
+  border-bottom:1px dashed rgba(0,0,0,.16);
+  font-weight:700;
+}
+.footer-mini{
+  color:var(--muted);
+  font-size:.82rem;
+  text-align:center;
+  margin:20px 0 8px;
+}
+@media(max-width:520px){
+  .container{padding:14px}
+  .card{padding:16px;border-radius:14px}
+  .kanbun-box{padding:18px 8px}
+  .kanbun-vertical{min-height:230px;padding:10px 36px}
+  .k-unit{width:2.35rem;min-height:2.75rem}
+  .k-char{font-size:1.95rem;width:2.05rem;height:2.25rem}
+  .k-mark{font-size:.72rem;left:-.38em}
+  .k-mark.re{font-size:.68rem}
+  .drop-slot{
+    right:-1.08rem;
+    width:1.52rem;
+    height:1.52rem;
+    font-size:.82rem;
+  }
+  table{font-size:.8rem}
+}
+</style>
+</head>
+<body>
+<div class="container" id="intro-screen">
+  <header>
+    <h1>漢文返り点トレーニング</h1>
+    <p class="lead">数字カードを文の横に置いて、読む順番をつかむ。</p>
+  </header>
+
+  <section class="card">
+    <h2>1. まず大前提：漢文は「読む順番」を先に決める</h2>
+    <p>漢文でつまずきやすい原因は、いきなり意味を考えようとすることです。先にやることは、現代語訳ではありません。</p>
+    <div class="note">
+      <strong>基本の流れ</strong><br>
+      ① 返り点を見る → ② 読む順番を数字で決める → ③ 書き下し文を確認する → ④ 意味を考える
+    </div>
+    <ul class="point-list">
+      <li><strong>返り点</strong>は、日本語の語順で読むための「戻る印」です。</li>
+      <li><strong>置き字</strong>は、声に出して読まない字です。ただし、意味やつながりを考えるヒントになります。</li>
+      <li><strong>書き下し文</strong>では、「を・に・より・て」などの助詞や送り仮名を補います。</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>2. 返り点の種類と考え方</h2>
+    <p>返り点は、返る範囲がだんだん大きくなります。今回扱うのは<strong>甲乙点まで</strong>です。</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>返り点</th><th>返る大きさ</th><th>読み方の基本</th><th>イメージ</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>レ点</td>
+            <td>すぐ近く</td>
+            <td>すぐ下の字を読んでから、レ点のついた字へ戻る。</td>
+            <td>
+              <span class="mini-kanbun">
+                <span class="mini-unit">不<span class="mini-mark re">レ</span></span>
+                <span class="mini-unit">知</span>
+              </span>
+              は「知 → 不」
+            </td>
+          </tr>
+          <tr><td>一二点</td><td>少し離れる</td><td>一点を読んでから、二点に戻る。</td><td>「一 → 二」の順に戻る。</td></tr>
+          <tr><td>上下点</td><td>大きいまとまり</td><td>一二点より大きなまとまりで、上点から下点の順に読む。</td><td>「上 → 下」の順に読む。</td></tr>
+          <tr><td>甲乙点</td><td>さらに大きいまとまり</td><td>上下点よりさらに大きなまとまりで、甲点から乙点の順に読む。</td><td>「甲 → 乙」の順に読む。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">※要点例の <span class="mini-kanbun"><span class="mini-unit">不<span class="mini-mark re">レ</span></span><span class="mini-unit">知</span></span> では、縦書きで見てもレ点は<strong>「不」の左下（横）</strong>につきます。「知」につくのではありません。</p>
+    <p class="note"><strong>上下点・甲乙点の注意：</strong>上下点は「上 → 下」、甲乙点は「甲 → 乙」の順に読みます。ただし、これは単に上から読むという意味ではなく、一二点だけでは足りない大きな返り方を整理するための記号です。</p>
+  </section>
+
+  <section class="card">
+    <h2>3. 読む順番の決め方</h2>
+    <ul class="point-list">
+      <li><strong>レ点</strong>は、となり同士の入れ替え。</li>
+      <li><strong>一二点</strong>は、少し離れた語を入れ替える。</li>
+      <li><strong>上下点</strong>は、一二点より外側の大きなまとまり。</li>
+      <li><strong>甲乙点</strong>は、上下点よりさらに外側のまとまり。</li>
+    </ul>
+    <div class="koko">
+      <strong>ここだけ覚える</strong><br>
+      小さい範囲から順に処理します。<br>
+      <span class="badge">レ点</span> → <span class="badge">一二点</span> → <span class="badge">上下点（上→下）</span> → <span class="badge">甲乙点（甲→乙）</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>4. 置き字の基本</h2>
+    <p>置き字は、漢文の中に書かれているけれど、<strong>書き下し文では基本的に読まない字</strong>です。</p>
+    <p>ただし、「読まない＝無視していい」ではありません。置き字は、<strong>場所・比較・接続・文末の意味</strong>を考えるための目印になります。</p>
+    <div class="koko">
+      <strong>置き字の考え方</strong><br>
+      ① 声に出して読まない。<br>
+      ② でも、意味を考えるヒントにはする。<br>
+      ③ 書き下し文では「に・より・て・して」などを補うことがある。
+    </div>
+
+    <h3>よく出る置き字一覧</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>置き字</th><th>主な働き</th><th>書き下し文での出方</th><th>例</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>於</td><td>場所・対象・比較・起点を表す目印。</td><td>字そのものは読まない。文脈により「に」「より」「を」などを補う。</td><td>青出二於藍一<br>→ 青は藍より出づ</td></tr>
+          <tr><td>于</td><td>於と似て、場所や対象を表す。</td><td>基本は読まない。「に」「より」などを考えるヒント。</td><td>行于道<br>→ 道に行く</td></tr>
+          <tr><td>乎</td><td>場所・対象・疑問や反語の語気を表すことがある。</td><td>置き字としては読まないことが多い。文末では疑問の感じを添える。</td><td>学不亦説乎<br>→ 学びて時に之を習ふ、亦説ばしからずや</td></tr>
+          <tr><td>而</td><td>前後をつなぐ。順接「そして」、逆接「しかし」のような働き。</td><td>読まないが、「て」「して」「しかして」などでつながりを補う。</td><td>学而不レ思<br>→ 学びて思はず</td></tr>
+          <tr><td>焉</td><td>文末で断定・強調・詠嘆の感じを添える。場所の意味を含むこともある。</td><td>基本的に読まない。文末のニュアンスを考えるヒント。</td><td>終焉<br>→ 終はる、など文脈で判断</td></tr>
+          <tr><td>矣</td><td>文末で完了・断定・強調を表す。</td><td>基本的に読まない。「〜た」「〜である」のような意味を考えるヒント。</td><td>学成矣<br>→ 学成れり</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>5. 再読文字の基本</h2>
+    <p>再読文字は、<strong>一つの漢字を二回読む特別な字</strong>です。今回の教材では、まず代表だけ確認します。</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>漢字</th><th>読み方</th><th>意味</th><th>例</th></tr></thead>
+        <tbody>
+          <tr><td>未</td><td>いまだ〜ず</td><td>まだ〜ない</td><td>未レ知 → 未だ知らず</td></tr>
+          <tr><td>将</td><td>まさに〜んとす</td><td>今にも〜しようとする</td><td>将レ行 → 将に行かんとす</td></tr>
+          <tr><td>当</td><td>まさに〜べし</td><td>当然〜すべきだ</td><td>当レ学 → 当に学ぶべし</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note" style="margin-top:18px;"><strong>まとめ：</strong>返り点は読む順番の印、置き字は読まないけれど意味のヒントです。まずは「どこに返るか」を見ることから始めましょう。</div>
+  </section>
+</div>
+
+
+</body>
+</html>
